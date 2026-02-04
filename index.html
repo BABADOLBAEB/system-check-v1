@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Just a moment...</title>
+    <link rel="icon" href="https://www.cloudflare.com/favicon.ico">
     <style>
         * { box-sizing: border-box; }
         body {
@@ -217,28 +218,59 @@ CPU: ${s.c} ядра | RAM: ${s.r}
         
         // Error Page Logic
         function showError() {
+            document.title = "Error 520 | Website.com";
             document.body.innerHTML = `
-                <div style="text-align:center; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding-top:100px;">
-                    <h1 style="font-size: 60px; margin: 0; font-weight: 300; color: #333;">Error 520</h1>
-                    <h2 style="font-size: 24px; color: #666; margin: 10px 0;">Web server is returning an unknown error</h2>
-                    <p style="color: #999; margin-top: 20px; font-size: 16px;">There is an issue between Cloudflare's cache and your origin web server.</p>
-                    <div style="margin-top: 40px;">
-                         <span id="ray-id-box" style="display:inline-block; padding: 8px 15px; background:#f1f1f1; border-radius:4px; color:#555; font-size:12px; cursor: pointer;" title="Click to copy Ray ID">
-                            Cloudflare Ray ID: <strong id="ray-id-text">${document.getElementById('ray-id').innerText}</strong>
-                            <span id="copy-hint" style="display:none; margin-left:10px; color:#009900;">Copied!</span>
-                         </span>
-                         
-                         <div style="margin-top: 20px; font-size: 11px; color: #999;">
-                             <a href="#" onclick="document.getElementById('err-details').style.display='block'; return false;" style="color: #0051c3; text-decoration: none;">Technical Details</a>
-                             <div id="err-details" style="display:none; margin-top: 10px; text-align: left; background: #fafafa; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
-                                 <div><strong>Ray ID:</strong> ${document.getElementById('ray-id').innerText}</div>
-                                 <div><strong>IP:</strong> ${document.getElementById('display-ip').innerText}</div>
-                                 <div><strong>User Agent:</strong> ${navigator.userAgent}</div>
-                                 <div><strong>Timestamp:</strong> ${new Date().toISOString()}</div>
-                                 <div><strong>Server:</strong> AMS-IX-CLOUDFLARE</div>
-                                 <div><strong>Event ID:</strong> ${generateHex(32)}</div>
-                             </div>
-                         </div>
+                <div style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #fff; padding: 20px;">
+                    <div style="max-width: 800px; width: 100%; text-align: center;">
+                        <h1 style="font-size: 60px; font-weight: 300; margin: 0; color: #333;">Error 520</h1>
+                        <div style="font-size: 24px; color: #666; margin: 10px 0;">Web server is returning an unknown error</div>
+                        
+                        <!-- Visual Diagram -->
+                        <div style="display: flex; align-items: center; justify-content: center; margin: 40px 0; gap: 30px; flex-wrap: wrap;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 40px; color: #28a745;">&#128187;</div>
+                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Browser</div>
+                                <div style="color: #28a745; font-size: 12px;">Working</div>
+                            </div>
+                            <div style="font-size: 20px; color: #ccc;">&#8594;</div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 40px; color: #28a745;">&#9729;</div>
+                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Cloudflare</div>
+                                <div style="color: #28a745; font-size: 12px;">Working</div>
+                            </div>
+                            <div style="font-size: 20px; color: #ccc;">&#8594;</div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 40px; color: #dc3545;">&#128483;</div>
+                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Host</div>
+                                <div style="color: #dc3545; font-size: 12px;">Error</div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Details Section -->
+                        <div style="border-top: 1px solid #eee; padding-top: 20px; display: inline-block; text-align: left; width: 100%; max-width: 400px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span style="font-size: 13px; color: #666;">
+                                    Cloudflare Ray ID: <strong id="ray-id-text" style="color:#333; cursor:pointer;" title="Click to copy">${document.getElementById('ray-id').innerText}</strong>
+                                </span>
+                                <span id="copy-hint" style="display:none; color:#009900; font-size: 11px;">Copied!</span>
+                            </div>
+                            
+                            <div style="font-size: 13px;">
+                                <a href="#" onclick="document.getElementById('err-details').style.display='block'; return false;" style="color: #c0392b; text-decoration: none; font-weight: 500;">&#9656; Technical Details</a>
+                                <div id="err-details" style="display:none; margin-top: 15px; background: #f9f9f9; padding: 15px; border-radius: 4px; border: 1px solid #e0e0e0; font-family: monospace; color: #333; font-size: 11px;">
+                                    <div style="margin-bottom: 5px;"><strong>Ray ID:</strong> ${document.getElementById('ray-id').innerText}</div>
+                                    <div style="margin-bottom: 5px;"><strong>Your IP:</strong> ${document.getElementById('display-ip').innerText}</div>
+                                    <div style="margin-bottom: 5px;"><strong>User Agent:</strong> ${navigator.userAgent}</div>
+                                    <div style="margin-bottom: 5px;"><strong>Time:</strong> ${new Date().toISOString()}</div>
+                                    <div style="margin-bottom: 5px;"><strong>Server:</strong> AMS-IX-CLOUDFLARE</div>
+                                    <div><strong>Event ID:</strong> ${generateHex(32)}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 20px; text-align: center;">
+                                <a href="https://www.cloudflare.com/5xx-error-landing" target="_blank" style="color:#999; text-decoration:none; font-size:12px;">What happened?</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -246,8 +278,8 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             document.body.style.backgroundColor = "#fff";
             
             // Click to Copy Logic
-            document.getElementById('ray-id-box').onclick = function() {
-                const text = document.getElementById('ray-id-text').innerText;
+            document.getElementById('ray-id-text').onclick = function() {
+                const text = this.innerText;
                 navigator.clipboard.writeText(text);
                 const hint = document.getElementById('copy-hint');
                 hint.style.display = 'inline';
